@@ -30,6 +30,10 @@ int main(int argc, char* argv[])
     cc_tokenizer::csv_parser<cc_tokenizer::String<char>, char> w1trainedParser(w1trained);
     cc_tokenizer::csv_parser<cc_tokenizer::String<char>, char> w2trainedParser(w2trained);
 
+    std::cout<< "-> Lines = " << w1trainedParser.get_total_number_of_lines() << std::endl;
+    w1trainedParser.go_to_next_line();
+    std::cout<<"-> Tokens = " << w1trainedParser.get_total_number_of_tokens() << std::endl;
+
     READ_W1(w1trainedParser, W1);
     READ_W2(w2trainedParser, W2);
 
@@ -148,7 +152,20 @@ int main(int argc, char* argv[])
                     A value of 0 would indicate orthogonality (no similarity).
                  */
                 Collective<double> u = Collective<double>{W1.slice(ptr->i*SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE), DIMENSIONS{SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, 1, NULL, NULL}};
+
+                /*for (int i = 0; i < SKIP_GRAM_EMBEDDNG_VECTOR_SIZE; i++)
+                {
+                    std::cout<< u[i] << ", ";
+                }
+                std::cout<< std::endl;*/
+
                 Collective<double> v = Collective<double>{W1.slice(next_ptr->i*SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE), DIMENSIONS{1, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, NULL, NULL}};
+                /*for (int i = 0; i < SKIP_GRAM_EMBEDDNG_VECTOR_SIZE; i++)
+                {
+                    std::cout<< v[i] << ", ";
+                }
+                std::cout<< std::endl;*/
+
                 std::cout<< "Cosine Similarity = " << Numcy::Spatial::Distance::cosine(u, v) << std::endl;
 
                 /*

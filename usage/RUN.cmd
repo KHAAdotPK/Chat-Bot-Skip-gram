@@ -1,1 +1,1 @@
-.\weights.exe --words sunshine time soni kisses sunshine
+.\weights.exe words sunshine time soni kisses sunshine
