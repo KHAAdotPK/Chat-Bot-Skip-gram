@@ -1,5 +1,12 @@
-### Development of a Chatbot Using Skip-Gram Trained Word Embeddings: A C++ Implementation
+### Training input to hidden layer word embeddings using Skip-gram: A C++ Implementation 
 ---
+#### Summary of key steps...
+1. **Word Embedding Extraction**: The word embedding for the `center word` is extracted from `W1` based on its index.
+2. **Dot Product**: A dot product is performed between the `center word’s` embedding and `W2` to compute `unnormalized probabilities` for `context words`.
+3. **One-Hot Encoding**: A one-hot vector is created to represent the true `context words` for the `center word`.
+4. **Gradient Computation**: Gradients (`grad_u`, `grad_h`, `grad_W1`) are computed to update the word embeddings and weights based on the prediction error.
+5. **Weight Update**: Finally, the input-to-hidden weight matrix (`W1`) is updated using the computed gradient and `learning rate`.
+
 ```C++
 /*
     Extract the corresponding word embedding from the weight matrix 𝑊1.
@@ -84,7 +91,10 @@ grad_u = Numcy::subtract<double>(fp.predicted_probabilities, oneHot);
 
 /*
     Dimensions of W2 is (SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, len(vocab) without redundency)
-    Dimensions of W2_T is (len(vocab) without redundency, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE)        
+    Dimensions of W2_T is (len(vocab) without redundency, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE) 
+   
+    Transpose the weight matrix W2 to prepare for backpropagation.
+    The transpose is needed to compute the gradient with respect to the hidden layer activations (h).   
  */
 Collective<T> W2_T;
 W2_T = Numcy::transpose(W2);
@@ -92,14 +102,21 @@ W2_T = Numcy::transpose(W2);
 /*
     Dimensions of grad_u is (1, len(vocab) without redundency)
     Dimensions of W2_T is (len(vocab) without redundency, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE)
-
     Dimensions of grad_h is (1, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE)
+
+    Compute the gradient of the hidden layer (grad_h) by performing a dot product 
+    between the error signal (grad_u) and the transposed output weight matrix (W2_T).
+    The resulting gradient (grad_h) represents the error signal for updating the center word's sembedding.
  */
 Collective<T> grad_h;
 grad_h = Numcy::dot(grad_u, W2_T);
 
 /*
     Dimensions of grad_W1 is (len(vocab) without redundency, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE)
+
+    Initialize the gradient for W1 (grad_W1) with zeros.
+    This matrix will store the updates for the input-to-hidden weight matrix (W1), 
+    which represents the word embeddings.    
  */
 Collective<T> grad_W1;
 grad_W1 = Numcy::zeros(DIMENSIONS{SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, vocab.numberOfUniqueTokens(), NULL, NULL});
@@ -130,9 +147,15 @@ for (cc_tokenizer::string_character_traits<char>::size_type i = 0; i < grad_W1.g
 
         Conclusion:
         - For batch processing: Use += to accumulate the gradient contributions across multiple word pairs.
+        OR. Gradient accumulation is often used when performing mini-batch gradient descent, where the gradients are accumulated over a batch of examples before updating the weights.
+
         - For single word pair updates: Use = to directly set the gradient for the current word pair.
+        OR. Direct assignment (=) is used when stochastic gradient descent (SGD) is performed, where each example immediately updates the weights. 
      */
 } 
 
+/*
+    Apply the gradient update to W1 using the learning rate (lr), adjusting the center word embedding.
+ */
 W1 -= bp.grad_weights_input_to_hidden * lr;
 ```
