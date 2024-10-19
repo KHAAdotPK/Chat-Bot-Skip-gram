@@ -20,27 +20,17 @@ int main(int argc, char* argv[])
     ARG arg_words;
     cc_tokenizer::csv_parser<cc_tokenizer::String<char>, char> argsv_parser(cc_tokenizer::String<char>(COMMAND));
 
-    // Reading Pretrained Embeddings
-    cc_tokenizer::String<char> w1trained = cc_tokenizer::cooked_read<char>(cc_tokenizer::String<char>("w1trained.txt"));
-    cc_tokenizer::String<char> w2trained = cc_tokenizer::cooked_read<char>(cc_tokenizer::String<char>("w2trained.txt"));
+    /*while (argsv_parser.go_to_next_line() != cc_tokenizer::string_character_traits<char>::eof())
+    {
+        std::cout<< argsv_parser.get_current_line().c_str() << std::endl;
 
-    Collective<double> W1;
-    Collective<double> W2;
+        while (argsv_parser.go_to_next_token() != cc_tokenizer::string_character_traits<char>::eof())
+        {
+            std::cout<< argsv_parser.get_current_token().c_str() << std::endl;
+        }
+    }
 
-    cc_tokenizer::csv_parser<cc_tokenizer::String<char>, char> w1trainedParser(w1trained);
-    cc_tokenizer::csv_parser<cc_tokenizer::String<char>, char> w2trainedParser(w2trained);
-
-    std::cout<< "-> Lines = " << w1trainedParser.get_total_number_of_lines() << std::endl;
-    w1trainedParser.go_to_next_line();
-    std::cout<<"-> Tokens = " << w1trainedParser.get_total_number_of_tokens() << std::endl;
-
-    READ_W1(w1trainedParser, W1);
-    READ_W2(w2trainedParser, W2);
-
-    std::cout<< W1.getShape().getDimensionsOfArray().getNumberOfInnerArrays() << std::endl;
-    std::cout<< W1.getShape().getNumberOfColumns() << std::endl;    
-    std::cout<< W2.getShape().getDimensionsOfArray().getNumberOfInnerArrays() << std::endl;
-    std::cout<< W2.getShape().getNumberOfColumns() << std::endl;
+    exit(0);*/
 
     // Command-line Argument Parsing
     FIND_ARG(argv, argc, argsv_parser, "--words", arg_words);
@@ -59,8 +49,30 @@ int main(int argc, char* argv[])
         return 0;
     }
 
-    // Finding Word Indices in Embeddings
-    // Get the word embeddings for a list of words
+    // Reading Pretrained Embeddings
+    cc_tokenizer::String<char> w1trained = cc_tokenizer::cooked_read<char>(cc_tokenizer::String<char>("w1trained.txt"));
+    cc_tokenizer::String<char> w2trained = cc_tokenizer::cooked_read<char>(cc_tokenizer::String<char>("w2trained.txt"));
+
+    Collective<double> W1;
+    Collective<double> W2;
+
+    cc_tokenizer::csv_parser<cc_tokenizer::String<char>, char> w1trainedParser(w1trained);
+    cc_tokenizer::csv_parser<cc_tokenizer::String<char>, char> w2trainedParser(w2trained);
+
+    std::cout<< "Total number of lines in file \"w1trained.txt\" : " << w1trainedParser.get_total_number_of_lines() << std::endl;
+    w1trainedParser.go_to_next_line();    
+    std::cout<< "Total number of tokens per line in file \"w1trained.txt\" : " << w1trainedParser.get_total_number_of_tokens() << std::endl;
+
+    READ_W1(w1trainedParser, W1);
+    READ_W2(w2trainedParser, W2);
+    
+    std::cout<< "Dimensions of W1 = " << W1.getShape().getDimensionsOfArray().getNumberOfInnerArrays() << " X " << W1.getShape().getNumberOfColumns() << std::endl;
+    std::cout<< "Dimensions of W2 = " << W2.getShape().getDimensionsOfArray().getNumberOfInnerArrays() << " X " << W2.getShape().getNumberOfColumns() << std::endl;
+
+    /*
+        Finding Word Indices in Embeddings
+        Get the word embeddings for a list of words
+     */
     for (int i = 1; i <= arg_words.argc; i++)
     {
         w1trainedParser.reset(LINES);
@@ -142,7 +154,13 @@ int main(int argc, char* argv[])
 
         while (next_ptr)
         {
-            std::cout<< ptr->i << ", " << next_ptr->i << std::endl;
+            //std::cout<< ptr->i << ", " << next_ptr->i << std::endl;
+
+            w1trainedParser.get_line_by_number(ptr->i + 1);
+            std::cout<< "Line number = " << ptr->i << " - " << w1trainedParser.get_token_by_number(1).c_str() << ", ";
+            w1trainedParser.get_line_by_number(next_ptr->i + 1);
+            std::cout<< "Line number = " << next_ptr->i << " - " << w1trainedParser.get_token_by_number(1).c_str() << std::endl;
+
 
             try
             {
@@ -166,15 +184,15 @@ int main(int argc, char* argv[])
                 }
                 std::cout<< std::endl;*/
 
-                std::cout<< "Cosine Similarity = " << Numcy::Spatial::Distance::cosine(u, v) << std::endl;
+                std::cout<< "Cosine Similarity = " << Numcy::Spatial::Distance::cosine(u, v) << ", ";
 
                 /*
                     This line calculates the cosine distance, which is 1 - cosine similarity.
                     Cosine distance transforms the similarity measure into a metric where 0 represents identical vectors,
                     and 1 represents vectors that are completely dissimilar (at 90° or 180°).
                  */
-                Collective<double> u1 = Collective<double>{W1.slice(ptr->i*SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE), DIMENSIONS{SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, 1, NULL, NULL}};
-                Collective<double> v1 = Collective<double>{W1.slice(next_ptr->i*SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE), DIMENSIONS{1, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, NULL, NULL}};
+                //Collective<double> u1 = Collective<double>{W1.slice(ptr->i*SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE), DIMENSIONS{SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, 1, NULL, NULL}};
+                //Collective<double> v1 = Collective<double>{W1.slice(next_ptr->i*SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE), DIMENSIONS{1, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, NULL, NULL}};
                 /*
                      If the cosine similarity is negative (which can happen when two vectors point in opposite directions),
                      then deducting it from 1 (i.e., 1 - cosine similarity) would result in a value greater than 1.
@@ -184,7 +202,7 @@ int main(int argc, char* argv[])
                      you can consider taking the absolute value of cosine similarity for a meaningful distance metric.
                      This way, you're ensuring that even opposite vectors are treated in a range that makes sense for your application
                  */
-                std::cout<< "Cosine Distance = " << 1 -  std::abs(Numcy::Spatial::Distance::cosine(u1, v1)) << std::endl;
+                std::cout<< "Cosine Distance = " << 1 -  std::abs(Numcy::Spatial::Distance::cosine(u, v)) << std::endl;
             }
             catch(const std::bad_alloc& e)
             {
