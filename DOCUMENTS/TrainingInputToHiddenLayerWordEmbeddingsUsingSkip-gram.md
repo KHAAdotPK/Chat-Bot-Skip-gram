@@ -1,4 +1,4 @@
-### Training input to hidden layer word embeddings using Skip-gram: A C++ Implementation 
+### Training "input to hidden layer" word embeddings using Skip-gram: A C++ Implementation 
 ---
 #### Summary of key steps...
 1. **Word Embedding Extraction**: The word embedding for the `center word` is extracted from `W1` based on its index.
