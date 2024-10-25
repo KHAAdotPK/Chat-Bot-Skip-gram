@@ -33,6 +33,6 @@ typedef struct index
 
 typedef INDEX* INDEX_PTR;
 
-#define COMMAND "h -h help --help ? /? (Displays help screen)\nv -v version --version /v (Displays version number)\nwords --words (This option expects a list of words from the vocabulary)"
+#define COMMAND "h -h help --help ? /? (Displays help screen)\nv -v version --version /v (Displays version number)\nwords --words (This option expects a list of words from the vocabulary)\n"
 
 #endif
