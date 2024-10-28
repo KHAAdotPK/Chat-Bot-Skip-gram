@@ -18,6 +18,11 @@
 #define GRAMMAR_END_OF_TOKEN_MARKER ' '
 #define GRAMMAR_END_OF_LINE_MARKER '\n'
 
+#ifdef SKIP_GRAM_EMBEDDNG_VECTOR_SIZE
+#undef SKIP_GRAM_EMBEDDNG_VECTOR_SIZE
+#endif
+#define SKIP_GRAM_EMBEDDNG_VECTOR_SIZE 50
+
 #include "../lib/argsv-cpp/lib/parser/parser.hh"
 #include "../lib/Numcy/header.hh"
 #include "../lib/sundry/cooked_read_new.hh"
