@@ -5,8 +5,15 @@
 
 #include <iostream>
 
+#include "./../lib/sundry/cooked_read_new.hh"
+#include "./../lib/corpus/corpus.hh"
+#include "../lib/Numcy/header.hh"
+#include "../lib/Skip-gram/lib/WordEmbedding-Algorithms/Word2Vec/Skip-gram/hyper-parameters.hh"
+
 #ifndef READ_TRAINED_SKIP_GRAM_WEIGHTS_TEST_APP_HH
 #define READ_TRAINED_SKIP_GRAM_WEIGHTS_TEST_APP_HH
+
+#define DEFAULT_CHAT_BOT_SKIP_GRAM_VOCABULARY_FILE_NAME "INPUT.txt"
 
 #ifdef GRAMMAR_END_OF_TOKEN_MARKER
 #undef GRAMMAR_END_OF_TOKEN_MARKER
@@ -38,6 +45,11 @@ typedef struct index
 
 typedef INDEX* INDEX_PTR;
 
-#define COMMAND "h -h help --help ? /? (Displays help screen)\nv -v version --version /v (Displays version number)\nwords --words (This option expects a list of words from the vocabulary)\n"
+#define COMMAND "h -h help --help ? /? (Displays help screen)\n\
+v -v version --version /v (Displays version number)\n\
+words --words (This option expects a list of words from the vocabulary)\n\
+w1 --w1 (Name of the file which has trained weights. It could be w1 input trained weights, or average of w1 input and w2 output trained weights)\n\
+w2 --w2 (Name of the file which has trained weights. It could be w2 output trained weights, or average of w1 input and w2 output trained weights)\n\
+vocab --vocab (Name of the file which has the vocabulary)\n"
 
 #endif

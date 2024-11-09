@@ -3,6 +3,17 @@
     Q@khaa.pk
  */
 
+    /*while (pairs.go_to_next_word_pair() != cc_tokenizer::string_character_traits<char>::eof())
+      {
+            //std::cout<< vocab[pairs.get_current_word_pair()->getCenterWord() - INDEX_ORIGINATES_AT_VALUE].c_str() << ", ";
+
+            if (!vocab[pairs.get_current_word_pair()->getCenterWord() - INDEX_ORIGINATES_AT_VALUE].compare(cc_tokenizer::String<char>(argv[1 + i])))
+            {
+                std::cout<< argv[1 + i] << std::endl;
+            }
+      }
+      //std::cout<< argv[1 + i] << std::endl;*/      
+
 /*
     This code is designed to:
     1. Read pretrained word embeddings from files.
@@ -17,76 +28,126 @@
 int main(int argc, char* argv[])
 {
     INDEX_PTR head = NULL, ptr = NULL;
-    ARG arg_words;
+    ARG arg_words, arg_w1, arg_common, arg_help, arg_vocab;
     cc_tokenizer::csv_parser<cc_tokenizer::String<char>, char> argsv_parser(cc_tokenizer::String<char>(COMMAND));
+    
+    if (argc < 2)
+    {              
+        HELP(argsv_parser, arg_help, "help");                
+        HELP_DUMP(argsv_parser, arg_help);
 
-    /*while (argsv_parser.go_to_next_line() != cc_tokenizer::string_character_traits<char>::eof())
+        return 0;                     
+    }
+    
+    FIND_ARG(argv, argc, argsv_parser, "?", arg_help);
+    if (arg_help.i)
     {
-        std::cout<< argsv_parser.get_current_line().c_str() << std::endl;
+        HELP(argsv_parser, arg_help, ALL);
+        HELP_DUMP(argsv_parser, arg_help);
 
-        while (argsv_parser.go_to_next_token() != cc_tokenizer::string_character_traits<char>::eof())
-        {
-            std::cout<< argsv_parser.get_current_token().c_str() << std::endl;
-        }
+        return 0;
     }
 
-    exit(0);*/
+    cc_tokenizer::String<char> vocab_file_name;
+    
+    FIND_ARG(argv, argc, argsv_parser, "--vocab", arg_vocab);
+    if (arg_vocab.i)
+    {
+        FIND_ARG_BLOCK(argv, argc, argsv_parser, arg_vocab);
 
-    // Command-line Argument Parsing
+        if (arg_vocab.argc)
+        {            
+            vocab_file_name = cc_tokenizer::String<char>(argv[arg_vocab.i + 1]);
+        }
+        else
+        {
+            ARG arg_vocab_help;
+            HELP(argsv_parser, arg_vocab_help, "vocab");                
+            HELP_DUMP(argsv_parser, arg_vocab_help); 
+
+            return 0;
+        }
+    }
+    else
+    {
+        vocab_file_name = cc_tokenizer::String<char>(DEFAULT_CHAT_BOT_SKIP_GRAM_VOCABULARY_FILE_NAME); 
+    }
+    
+    GET_FIRST_ARG_INDEX(argv, argc, argsv_parser,  arg_common);            
     FIND_ARG(argv, argc, argsv_parser, "--words", arg_words);
     if (!(arg_words.i))
-    {
-        std::cout<< "Words are not given, can't go further." << std::endl;
-        return 0;
+    {   
+        if (!(arg_common.argc))
+        {        
+            std::cout<< "Words are not given, can't go further. Please use \"help\" command line option." << std::endl;
+
+            return 0;
+        }
     }
     FIND_ARG_BLOCK(argv, argc, argsv_parser, arg_words);
     if (!arg_words.argc) 
     {
-        ARG arg_words_help;
-        HELP(argsv_parser, arg_words_help, "words");                
-        HELP_DUMP(argsv_parser, arg_words_help); 
+        if (arg_common.argc)
+        {                         
+            arg_words = arg_common;
+            arg_words.i -= 1;
+        }
+        else
+        {
+            ARG arg_words_help;
+            HELP(argsv_parser, arg_words_help, "words");                
+            HELP_DUMP(argsv_parser, arg_words_help); 
 
-        return 0;
+            return 0;
+        }       
     }
 
-    // Reading Pretrained Embeddings
-    cc_tokenizer::String<char> w1trained = cc_tokenizer::cooked_read<char>(cc_tokenizer::String<char>("concatenate.txt"));
-    //cc_tokenizer::String<char> w1trained = cc_tokenizer::cooked_read<char>(cc_tokenizer::String<char>("w1trained.txt"));
-    //cc_tokenizer::String<char> w1trained = cc_tokenizer::cooked_read<char>(cc_tokenizer::String<char>("average.txt"));
-    cc_tokenizer::String<char> w2trained = cc_tokenizer::cooked_read<char>(cc_tokenizer::String<char>("w2trained.txt"));
+    FIND_ARG(argv, argc, argsv_parser, "w1", arg_w1);
+    if (arg_w1.i)
+    {
+        FIND_ARG_BLOCK(argv, argc, argsv_parser, arg_w1);
 
-    Collective<double> W1;
-    Collective<double> W2;
+        if (!arg_w1.argc)
+        {
+            ARG arg_w1_help;
+            HELP(argsv_parser, arg_w1_help, "--w1");                
+            HELP_DUMP(argsv_parser, arg_w1_help); 
 
-    cc_tokenizer::csv_parser<cc_tokenizer::String<char>, char> w1trainedParser(w1trained);
-    cc_tokenizer::csv_parser<cc_tokenizer::String<char>, char> w2trainedParser(w2trained);
-
-    std::cout<< "Total number of lines in file \"w1trained.txt\" : " << w1trainedParser.get_total_number_of_lines() << std::endl;
-    w1trainedParser.go_to_next_line();    
-    std::cout<< "Total number of tokens per line in file \"w1trained.txt\" : " << w1trainedParser.get_total_number_of_tokens() << std::endl;
-
-    READ_W1(w1trainedParser, W1);
-    READ_W2(w2trainedParser, W2);
+            return 0;
+        }
+    }
     
-    std::cout<< "Dimensions of W1 = " << W1.getShape().getDimensionsOfArray().getNumberOfInnerArrays() << " X " << W1.getShape().getNumberOfColumns() << std::endl;
-    std::cout<< "Dimensions of W2 = " << W2.getShape().getDimensionsOfArray().getNumberOfInnerArrays() << " X " << W2.getShape().getNumberOfColumns() << std::endl;
+    /*std::cout<< "--->>>> " << arg_words.argc << " - " << arg_words.i << " < - > " << arg_words.j << std::endl;
+
+    for (int i = 1; i <= arg_words.argc; i++)
+    {
+        std::cout<< argv[arg_words.i + i] << ", ";
+    }
+
+    std::cout<< std::endl;
+     
+    return 0;*/
+
+    cc_tokenizer::String<char> vocab_text = cc_tokenizer::cooked_read<char>(vocab_file_name);
+    CORPUS vocab(vocab_text); 
+
+    Collective<double> W1 = Collective<double>{NULL, DIMENSIONS{SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, vocab.numberOfUniqueTokens(), NULL, NULL}};
+    Collective<double> W2 = Collective<double>{NULL, DIMENSIONS{vocab.numberOfUniqueTokens(), SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, NULL, NULL}};
+
+    READ_W_BIN(W1, argv[arg_w1.i + 1], double);
 
     /*
         Finding Word Indices in Embeddings
         Get the word embeddings for a list of words
      */
-    for (int i = 1; i <= arg_words.argc; i++)
+    
+    for (int i = arg_words.i; i < arg_words.j; i++)
     {
-        w1trainedParser.reset(LINES);
-        w1trainedParser.reset(TOKENS);
-
-        cc_tokenizer::string_character_traits<char>::size_type j = 0;    
-
-        while (w1trainedParser.go_to_next_line() != cc_tokenizer::string_character_traits<char>::eof())
+        for (cc_tokenizer::string_character_traits<char>::size_type j = 0; j < vocab.numberOfUniqueTokens(); j++)
         {
-            if (!w1trainedParser.get_token_by_number(1).compare(cc_tokenizer::String<char>(argv[arg_words.i + i])))
+            if (!vocab[j + INDEX_ORIGINATES_AT_VALUE].compare(cc_tokenizer::String<char>(argv[1 + i])))
             {
-                //std::cout<< w1trainedParser.get_token_by_number(1).c_str() << std::endl;
+                std::cout<< "j = " << j + INDEX_ORIGINATES_AT_VALUE << ", " << argv[1 + i] << std::endl;
 
                 if (head == NULL)
                 {
@@ -134,14 +195,14 @@ int main(int argc, char* argv[])
                     {
                         std::cerr << e.what() << '\n';
                     }                    
-                }
+                }            
             }
-
-            j++;
-        }
+        }        
     }
-    
-    // Calculating Cosine Similarity:
+
+
+    //////////
+
     ptr = head;
     while (ptr)
     {
@@ -158,11 +219,12 @@ int main(int argc, char* argv[])
         {
             //std::cout<< ptr->i << ", " << next_ptr->i << std::endl;
 
-            w1trainedParser.get_line_by_number(ptr->i + 1);
-            std::cout<< "Line number = " << ptr->i << " - " << w1trainedParser.get_token_by_number(1).c_str() << ", ";
-            w1trainedParser.get_line_by_number(next_ptr->i + 1);
-            std::cout<< "Line number = " << next_ptr->i << " - " << w1trainedParser.get_token_by_number(1).c_str() << std::endl;
+            //w1trainedParser.get_line_by_number(ptr->i + 1);
+            //std::cout<< "Line number = " << ptr->i << " - " << w1trainedParser.get_token_by_number(1).c_str() << ", ";
+            //w1trainedParser.get_line_by_number(next_ptr->i + 1);
+            //std::cout<< "Line number = " << next_ptr->i << " - " << w1trainedParser.get_token_by_number(1).c_str() << std::endl;
 
+            std::cout<< vocab[ptr->i + INDEX_ORIGINATES_AT_VALUE].c_str() << " -> " << vocab[next_ptr->i + INDEX_ORIGINATES_AT_VALUE].c_str() << std::endl;
 
             try
             {
@@ -230,9 +292,12 @@ int main(int argc, char* argv[])
 
         ptr = ptr->next;
     }
-    
+
+    /////////
+
+
     // Memory Management
-    // Deallocate
+    
     if (head != NULL)
     {
         ptr = head;
@@ -260,6 +325,6 @@ int main(int argc, char* argv[])
             }   
         }
     }
-                
+
     return 0;
 }
