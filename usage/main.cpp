@@ -147,7 +147,7 @@ int main(int argc, char* argv[])
         {
             if (!vocab[j + INDEX_ORIGINATES_AT_VALUE].compare(cc_tokenizer::String<char>(argv[1 + i])))
             {
-                std::cout<< "j = " << j + INDEX_ORIGINATES_AT_VALUE << ", " << argv[1 + i] << std::endl;
+                /*std::cout<< "j = " << j + INDEX_ORIGINATES_AT_VALUE << ", " << argv[1 + i] << std::endl;*/
 
                 if (head == NULL)
                 {
