@@ -5,6 +5,8 @@
 
 #include <iostream>
 
+#include "../lib/argsv-cpp/lib/parser/parser.hh"
+#include "../lib/read_write_weights/header.hh"
 #include "./../lib/sundry/cooked_read_new.hh"
 #include "./../lib/corpus/corpus.hh"
 #include "../lib/Numcy/header.hh"
@@ -18,22 +20,16 @@
 #ifdef GRAMMAR_END_OF_TOKEN_MARKER
 #undef GRAMMAR_END_OF_TOKEN_MARKER
 #endif
+#define GRAMMAR_END_OF_TOKEN_MARKER ' '
+
 #ifdef GRAMMAR_END_OF_LINE_MARKER
 #undef GRAMMAR_END_OF_LINE_MARKER
 #endif
-
-#define GRAMMAR_END_OF_TOKEN_MARKER ' '
 #define GRAMMAR_END_OF_LINE_MARKER '\n'
 
-#ifdef SKIP_GRAM_EMBEDDNG_VECTOR_SIZE
-#undef SKIP_GRAM_EMBEDDNG_VECTOR_SIZE
-#endif
+#ifndef SKIP_GRAM_EMBEDDNG_VECTOR_SIZE
 #define SKIP_GRAM_EMBEDDNG_VECTOR_SIZE 50
-
-#include "../lib/argsv-cpp/lib/parser/parser.hh"
-#include "../lib/Numcy/header.hh"
-#include "../lib/sundry/cooked_read_new.hh"
-#include "../lib/read_write_weights/header.hh"
+#endif
 
 typedef struct index
 {
