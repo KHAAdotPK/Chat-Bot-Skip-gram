@@ -26,7 +26,7 @@ kisses -> cheeks
 Cosine Similarity = 0.258928, Cosine Distance = 0.741072
 ```
 
-Read this article for [in-depth analysis on Skip-Gram word embeddings, focusing on training dynamics, loss function behavior, and the impact of cosine similarity for optimal parameter tuning](https://github.com/KHAAdotPK/Skip-gram.git).
+Read this article for [in-depth analysis on Skip-Gram word embeddings, focusing on training dynamics, loss function behavior, and the impact of cosine similarity for optimal parameter tuning](https://github.com/KHAAdotPK/Skip-gram/blob/main/usage/README.md).
 
 
 ### License
