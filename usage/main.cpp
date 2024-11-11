@@ -131,10 +131,14 @@ int main(int argc, char* argv[])
     cc_tokenizer::String<char> vocab_text = cc_tokenizer::cooked_read<char>(vocab_file_name);
     CORPUS vocab(vocab_text); 
 
-    Collective<double> W1 = Collective<double>{NULL, DIMENSIONS{SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, vocab.numberOfUniqueTokens(), NULL, NULL}};
+    Collective<double> W1 /*= Collective<double>{NULL, DIMENSIONS{SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, vocab.numberOfUniqueTokens(), NULL, NULL}}*/;
     Collective<double> W2 = Collective<double>{NULL, DIMENSIONS{vocab.numberOfUniqueTokens(), SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, NULL, NULL}};
 
-    READ_W_BIN(W1, argv[arg_w1.i + 1], double);
+    READ_W_BIN(W2, argv[arg_w1.i + 1], double);
+
+    W1 = Numcy::transpose(W2);
+
+    std::cout<< W1.getShape().getNumberOfColumns() << " X " << W1.getShape().getDimensionsOfArray().getNumberOfInnerArrays() << std::endl;
 
     /*
         Finding Word Indices in Embeddings
