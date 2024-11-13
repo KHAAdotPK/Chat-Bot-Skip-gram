@@ -4,7 +4,9 @@ The Chat Bot Skip-Gram aims to leverage word embeddings trained via the [skip-gr
 Read this article for [in-depth analysis on Skip-Gram word embeddings, focusing on training dynamics, loss function behavior, and the impact of optimal parameter tuning on cosine similarity](https://github.com/KHAAdotPK/Skip-gram/blob/main/usage/README.md).
 
 **Commands**: Here is a list of supported commands and their descriptions **...**
+
 **Basic Commands**
+
 - `h -h help --help ? /?`
     - Displays the help screen.
 - `v -v version --version /v`
