@@ -22,7 +22,7 @@ Read this article for [in-depth analysis on Skip-Gram word embeddings, focusing 
 - `vocab --vocab`
     - Specifies the file containing the vocabulary.
 - `showpairs --showpairs show_pairs showPairs`
-    - Displays pairs of target/center words and their surrounding context words. The number of context words for each target word is determined by the macro SKIP_GRAM_EMBEDDING_VECTOR_SIZE, which is a configurable hyperparameter. 
+    - Displays pairs of target/center words and their surrounding context words. The number of context words for each target word is determined by the macro SKIP_GRAM_CONTEXT_WINDOW_SIZE, which is a configurable hyperparameter. 
 
 **Additional Flags**
 - `average`
