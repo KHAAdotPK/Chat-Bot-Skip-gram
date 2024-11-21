@@ -28,7 +28,7 @@
 int main(int argc, char* argv[])
 {
     INDEX_PTR head = NULL, ptr = NULL;
-    ARG arg_common, arg_words, arg_w1, arg_w2, arg_help, arg_vocab, arg_average;
+    ARG arg_common, arg_words, arg_w1, arg_w2, arg_help, arg_vocab, arg_average, arg_pairs;
     cc_tokenizer::csv_parser<cc_tokenizer::String<char>, char> argsv_parser(cc_tokenizer::String<char>(COMMAND));
     cc_tokenizer::csv_parser<cc_tokenizer::String<char>, char> argsv_parser_average(cc_tokenizer::String<char>(COMMAND_average));
     cc_tokenizer::String<char> vocab_file_name;
@@ -139,7 +139,7 @@ int main(int argc, char* argv[])
 
         return 0;    
     }
-    
+        
     /*std::cout<< "--->>>> " << arg_words.argc << " - " << arg_words.i << " < - > " << arg_words.j << std::endl;
 
     for (int i = 1; i <= arg_words.argc; i++)
@@ -153,6 +153,13 @@ int main(int argc, char* argv[])
 
     cc_tokenizer::String<char> vocab_text = cc_tokenizer::cooked_read<char>(vocab_file_name);
     CORPUS vocab(vocab_text); 
+
+    FIND_ARG(argv, argc, argsv_parser, "showPairs", arg_pairs);
+    if (arg_pairs.i)
+    {
+        PAIRS grow_pairs_dude_ask_her_if_she_want_to_marry_you(vocab, true);
+    }
+
 
     Collective<double> W1 /* = Collective<double>{NULL, DIMENSIONS{SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, vocab.numberOfUniqueTokens(), NULL, NULL}}*/;
     Collective<double> W2 = Collective<double>{NULL, DIMENSIONS{vocab.numberOfUniqueTokens(), SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, NULL, NULL}};
