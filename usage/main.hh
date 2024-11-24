@@ -28,7 +28,7 @@
 #ifdef SKIP_GRAM_CONTEXT_WINDOW_SIZE
 #undef SKIP_GRAM_CONTEXT_WINDOW_SIZE
 #endif
-#define SKIP_GRAM_CONTEXT_WINDOW_SIZE 2
+#define SKIP_GRAM_CONTEXT_WINDOW_SIZE 4
 
 #include "../lib/argsv-cpp/lib/parser/parser.hh"
 #include "../lib/read_write_weights/header.hh"
