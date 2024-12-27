@@ -35,7 +35,10 @@ Read this article for [in-depth analysis on Skip-Gram word embeddings, focusing 
             This command implies that the W1 and W2 matrices will be averaged, and the program will proceed with processing the resulting matrix. Optionally expects a numeric argument, which serves as a multiplier applied to the W2 matrix before averaging.
 
 - `show --show show_pairs showPairs`
-    -  Displays pairs of target/center words and their surrounding context words. The number of context words for each target word is determined by the macro SKIP_GRAM_EMBEDDING_VECTOR_SIZE, which is a configurable hyperparameter.           
+    -  Displays pairs of target/center words and their surrounding context words. The number of context words for each target word is determined by the macro SKIP_GRAM_EMBEDDING_VECTOR_SIZE, which is a configurable hyperparameter.
+
+- `proper --proper`
+    - To process the user inputs in the chatbot, this option ensures the correct usage of trained weights; W1 for input word embeddings and W2 for context words.
 
 ### License
 This project is governed by a license, the details of which can be located in the accompanying file named 'LICENSE.' Please refer to this file for comprehensive information.   
