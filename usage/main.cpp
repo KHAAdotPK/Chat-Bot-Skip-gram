@@ -3,17 +3,6 @@
     Q@khaa.pk
  */
 
-    /*while (pairs.go_to_next_word_pair() != cc_tokenizer::string_character_traits<char>::eof())
-      {
-            //std::cout<< vocab[pairs.get_current_word_pair()->getCenterWord() - INDEX_ORIGINATES_AT_VALUE].c_str() << ", ";
-
-            if (!vocab[pairs.get_current_word_pair()->getCenterWord() - INDEX_ORIGINATES_AT_VALUE].compare(cc_tokenizer::String<char>(argv[1 + i])))
-            {
-                std::cout<< argv[1 + i] << std::endl;
-            }
-      }
-      //std::cout<< argv[1 + i] << std::endl;*/      
-
 /*
     This code is designed to:
     1. Read pretrained word embeddings from files.
@@ -28,7 +17,7 @@
 int main(int argc, char* argv[])
 {
     INDEX_PTR head = NULL, ptr = NULL;
-    ARG arg_common, arg_words, arg_w1, arg_w2, arg_help, arg_vocab, arg_average, arg_pairs;
+    ARG arg_common, arg_words, arg_w1, arg_w2, arg_help, arg_vocab, arg_average, arg_pairs, arg_proper;
     cc_tokenizer::csv_parser<cc_tokenizer::String<char>, char> argsv_parser(cc_tokenizer::String<char>(COMMAND));
     cc_tokenizer::csv_parser<cc_tokenizer::String<char>, char> argsv_parser_average(cc_tokenizer::String<char>(COMMAND_average));
     cc_tokenizer::String<char> vocab_file_name;
@@ -49,6 +38,8 @@ int main(int argc, char* argv[])
 
         return 0;
     }
+
+    FIND_ARG(argv, argc, argsv_parser, "proper", arg_proper);
                
     FIND_ARG(argv, argc, argsv_parser, "--vocab", arg_vocab);
     if (arg_vocab.i)
@@ -90,7 +81,7 @@ int main(int argc, char* argv[])
         if (arg_common.argc)
         {                         
             arg_words = arg_common;
-            arg_words.i -= 1;
+            //arg_words.i -= 1;
         }
         else
         {
@@ -115,6 +106,16 @@ int main(int argc, char* argv[])
 
             return 0;
         }
+    }
+    else if (arg_proper.i)
+    {        
+        std::cerr<< "Error: The command-line option \"--proper\" requires a file name specifying the trained input weights. Please provide the appropriate file name and try again." << std::endl;
+
+        ARG arg_w1_help;
+        HELP(argsv_parser, arg_w1_help, "--w1");                
+        HELP_DUMP(argsv_parser, arg_w1_help); 
+
+        return 0;
     }
 
     FIND_ARG(argv, argc, argsv_parser, "--w2", arg_w2);
@@ -160,97 +161,109 @@ int main(int argc, char* argv[])
         PAIRS grow_pairs_dude_ask_her_if_she_want_to_marry_you(vocab, true);
     }
 
-
-    Collective<double> W1 /* = Collective<double>{NULL, DIMENSIONS{SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, vocab.numberOfUniqueTokens(), NULL, NULL}}*/;
-    Collective<double> W2 = Collective<double>{NULL, DIMENSIONS{vocab.numberOfUniqueTokens(), SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, NULL, NULL}};
+    Collective<double> W1 /* = Collective<double>{NULL, DIMENSIONS{SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, vocab.numberOfUniqueTokens() vocab.numberOfUniqueTokens(), NULL, NULL}}*/;
+    Collective<double> W2 = Collective<double>{NULL, DIMENSIONS{/*vocab.numberOfUniqueTokens()*/ vocab.numberOfTokens(), SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, NULL, NULL}};
 
     if (arg_w1.argc)
     {
-        W1 = Collective<double>{NULL, DIMENSIONS{SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, vocab.numberOfUniqueTokens(), NULL, NULL}};
+        W1 = Collective<double>{NULL, DIMENSIONS{SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, /*vocab.numberOfUniqueTokens()*/ vocab.numberOfTokens(), NULL, NULL}};
         READ_W_BIN(W1, argv[arg_w1.i + 1], double);
 
         std::cout<< "W1: " << W1.getShape().getDimensionsOfArray().getNumberOfInnerArrays() << " X " <<  W1.getShape().getNumberOfColumns() << std::endl;
     }
-
+    
     READ_W_BIN(W2, argv[arg_w2.i + 1], double);
     
     std::cout<< "W2: " << W2.getShape().getDimensionsOfArray().getNumberOfInnerArrays() << " X " <<  W2.getShape().getNumberOfColumns() << std::endl;
-    W2 = Numcy::transpose(W2);    
-    std::cout<< "W2 transposed: " << W2.getShape().getDimensionsOfArray().getNumberOfInnerArrays() << " X " <<  W2.getShape().getNumberOfColumns() << std::endl;
+    Collective<double> W2_transposed = Numcy::transpose(W2); 
+    //W2 = Numcy::transpose(W2);    
+    std::cout<< "W2 transposed: " << W2_transposed.getShape().getDimensionsOfArray().getNumberOfInnerArrays() << " X " <<  W2_transposed.getShape().getNumberOfColumns() << std::endl;
 
-    FIND_ARG(argv, argc, argsv_parser, "average", arg_average);
-    if (arg_average.i && arg_w1.i && arg_w1.argc)
+    if (!arg_proper.i)
     {
-        FIND_ARG_BLOCK(argv, argc, argsv_parser, arg_average);
-        if (arg_average.argc)
+        FIND_ARG(argv, argc, argsv_parser, "average", arg_average);
+        if (arg_average.i && arg_w1.i && arg_w1.argc)
         {
-            ARG arg_average_do;
+            FIND_ARG_BLOCK(argv, argc, argsv_parser, arg_average);
+            if (arg_average.argc)
+            {
+                ARG arg_average_do;
 
-            std::cout<< "argc = " << argc << std::endl;
-            std::cout<< "-> argc = " << arg_average.argc << " -> average i = " << arg_average.i << " -> average j = " << arg_average.j << std::endl;
+                std::cout<< "argc = " << argc << std::endl;
+                std::cout<< "-> argc = " << arg_average.argc << " -> average i = " << arg_average.i << " -> average j = " << arg_average.j << std::endl;
 
-            FIND_ARG((argv + arg_average.i), arg_average.argc + 1/*+ 1*/, argsv_parser_average, "do", arg_average_do);            
-            //if ((W2.getShape().getDimensionsOfArray().getNumberOfInnerArrays() == W1.getShape().getDimensionsOfArray().getNumberOfInnerArrays()) && (W2.getShape().getNumberOfColumns() == W1.getShape().getNumberOfColumns()))
-            if (arg_average_do.i)
-            {                  
-                std::cout<< *(argv + arg_average.i + arg_average_do.i) << " -> do argc = " << arg_average_do.argc << " -> do i = " << arg_average_do.i << " -> do j = " << arg_average_do.j << " (argc - arg_average.i) = " << (argc - arg_average.i) << std::endl; 
-                /*  */
-                //FIND_ARG_BLOCK((argv + arg_average.i /*+ arg_average_do.i*/), /*2*/ (argc - (arg_average.i /*+ arg_average_do.i*/)) /*+ 1*/ /*arg_average.j*/ /*argc*/, argsv_parser_average, arg_average_do);
-                FIND_ARG_BLOCK((argv + arg_average.i /*+ arg_average_do.i*/), /*2*/ arg_average.argc + 1 /*+ 1*/ /*arg_average.j*/ /*argc*/, argsv_parser_average, arg_average_do); 
-                std::cout<< *(argv + arg_average.i + arg_average_do.i) << " -> do argc = " << arg_average_do.argc << " -> do i = " << arg_average_do.i << " -> do j = " << arg_average_do.j << " (argc - arg_average.i) = " << (argc - arg_average.i) << std::endl;
-                //std::cout<< *(argv + arg_average.i + arg_average_do.i) << "->argc =  " << arg_average_do.argc << "-> i = " << arg_average_do.i << "-> j =" << arg_average_do.j << std::endl;                
-                if (W2.getShape() == W1.getShape())
-                {
-                    if (arg_average_do.argc > 1)
+                FIND_ARG((argv + arg_average.i), arg_average.argc + 1/*+ 1*/, argsv_parser_average, "do", arg_average_do);            
+                //if ((W2.getShape().getDimensionsOfArray().getNumberOfInnerArrays() == W1.getShape().getDimensionsOfArray().getNumberOfInnerArrays()) && (W2.getShape().getNumberOfColumns() == W1.getShape().getNumberOfColumns()))
+                if (arg_average_do.i)
+                {                  
+                    std::cout<< *(argv + arg_average.i + arg_average_do.i) << " -> do argc = " << arg_average_do.argc << " -> do i = " << arg_average_do.i << " -> do j = " << arg_average_do.j << " (argc - arg_average.i) = " << (argc - arg_average.i) << std::endl; 
+                    /*  */
+                    //FIND_ARG_BLOCK((argv + arg_average.i /*+ arg_average_do.i*/), /*2*/ (argc - (arg_average.i /*+ arg_average_do.i*/)) /*+ 1*/ /*arg_average.j*/ /*argc*/, argsv_parser_average, arg_average_do);
+                    FIND_ARG_BLOCK((argv + arg_average.i /*+ arg_average_do.i*/), /*2*/ arg_average.argc + 1 /*+ 1*/ /*arg_average.j*/ /*argc*/, argsv_parser_average, arg_average_do); 
+                    std::cout<< *(argv + arg_average.i + arg_average_do.i) << " -> do argc = " << arg_average_do.argc << " -> do i = " << arg_average_do.i << " -> do j = " << arg_average_do.j << " (argc - arg_average.i) = " << (argc - arg_average.i) << std::endl;
+                    //std::cout<< *(argv + arg_average.i + arg_average_do.i) << "->argc =  " << arg_average_do.argc << "-> i = " << arg_average_do.i << "-> j =" << arg_average_do.j << std::endl;                
+                    if (W2_transposed.getShape() == W1.getShape())
                     {
-                        unsigned int m = std::atoi(argv[arg_average.i + arg_average_do.i + 1]);
-                        unsigned int d = std::atoi(argv[arg_average.i + arg_average_do.i + 2]);
-
-                        std::cout<< "m = " << m << ", d = " << d << std::endl;
-
-                        for (cc_tokenizer::string_character_traits<char>::size_type i = 0; i < W1.getShape().getN(); i++)
+                        if (arg_average_do.argc > 1)
                         {
-                            //double f = W2[i];
-                            //f = f*m;
-                            //f = W1[i] + f;
+                            unsigned int m = std::atoi(argv[arg_average.i + arg_average_do.i + 1]);
+                            unsigned int d = std::atoi(argv[arg_average.i + arg_average_do.i + 2]);
 
-                            //std::cout<< f/d << std::endl;
+                            std::cout<< "m = " << m << ", d = " << d << std::endl;
 
-                            W1[i] = (((W1[i] + (W2[i]*m)))/d);
-                        }                        
+                            for (cc_tokenizer::string_character_traits<char>::size_type i = 0; i < W1.getShape().getN(); i++)
+                            {
+                                //double f = W2[i];
+                                //f = f*m;
+                                //f = W1[i] + f;
+
+                                //std::cout<< f/d << std::endl;
+
+                                W1[i] = (((W1[i] + (W2_transposed[i]*m)))/d);
+                            }                        
+                        }
+                        else
+                        {
+                            std::cout<< "No m no d" << std::endl;
+                            for (cc_tokenizer::string_character_traits<char>::size_type i = 0; i < W1.getShape().getN(); i++)
+                            {
+                                W1[i] = (W1[i] + W2_transposed[i]);
+                            }
+                        }
                     }
                     else
                     {
-                        std::cout<< "No m no d" << std::endl;
-                        for (cc_tokenizer::string_character_traits<char>::size_type i = 0; i < W1.getShape().getN(); i++)
-                        {
-                            W1[i] = (W1[i] + W2[i]);
-                        }
+                        std::cout<< "main() Error: Shape of W1 and W2 are not same. To take avaerage of two matrices, their shapes must be same." << std::endl;
+
+                        return 0;
                     }
                 }
-                else
-                {
-                    std::cout<< "main() Error: Shape of W1 and W2 are not same. To take avaerage of two matrices, their shapes must be same." << std::endl;
-
-                    return 0;
-                }
             }
-        }
-    }
-
+        } 
+    }  
+    
     /*
         Finding Word Indices in Embeddings
         Get the word embeddings for a list of words
      */
-    
-    for (int i = arg_words.i; i < arg_words.j; i++)
-    {
-        for (cc_tokenizer::string_character_traits<char>::size_type j = 0; j < vocab.numberOfUniqueTokens(); j++)
-        {
-            if (!vocab[j + INDEX_ORIGINATES_AT_VALUE].compare(cc_tokenizer::String<char>(argv[1 + i])))
-            {
-                /*std::cout<< "j = " << j + INDEX_ORIGINATES_AT_VALUE << ", " << argv[1 + i] << std::endl;*/
 
+    std::cout<< "\"Number of target words\"(arg_words.argc) = " << arg_words.argc << std::endl;
+    std::cout<< "Target Instances and their indices in vocabulary..." << std::endl;
+
+    bool found = false;
+    
+    for (int i = 0 /*arg_words.i*/; i < arg_words.argc; i++)
+    {    
+        for (cc_tokenizer::string_character_traits<char>::size_type j = 0; j < /*vocab.numberOfUniqueTokens()*/ vocab.numberOfTokens(); j++)
+        {            
+            if (/*!vocab[j + INDEX_ORIGINATES_AT_VALUE].compare(cc_tokenizer::String<char>(argv[i + 1]))*/ !vocab(j + INDEX_ORIGINATES_AT_VALUE, true).compare(argv[i + 1]))
+            {
+                found = true;
+
+                /*std::cout<< "j = " << j + INDEX_ORIGINATES_AT_VALUE << ", " << argv[1 + i] << std::endl;*/
+                
+                //std::cout<< vocab(j + INDEX_ORIGINATES_AT_VALUE, true).c_str() << ", ";
+                                
                 if (head == NULL)
                 {
                     try 
@@ -297,122 +310,238 @@ int main(int argc, char* argv[])
                     {
                         std::cerr << e.what() << '\n';
                     }                    
-                }            
+                }
+                
+                std::cout<< vocab(j + INDEX_ORIGINATES_AT_VALUE, true).c_str() << "#";
+
+                if (ptr != NULL)
+                {                    
+                    COMPOSITE_PTR composite_ptr;
+                    LINETOKENNUMBER_PTR linetokennumber_ptr;
+
+                    try
+                    {
+                        composite_ptr = vocab.get_composite_ptr(ptr->i + INDEX_ORIGINATES_AT_VALUE, true);
+                        linetokennumber_ptr = vocab.get_line_token_number(composite_ptr, ptr->i + INDEX_ORIGINATES_AT_VALUE);
+                    }
+                    catch(ala_exception& e)
+                    {
+                        std::cerr << e.what() << '\n';
+                    }
+
+                    std::cout<< ptr->i << "(" << linetokennumber_ptr->l << ", " << linetokennumber_ptr->t << ") ";                 
+                }
+                else
+                {                    
+                    COMPOSITE_PTR composite_ptr;
+                    LINETOKENNUMBER_PTR linetokennumber_ptr;
+
+                    try
+                    {
+                        composite_ptr = vocab.get_composite_ptr(head->i + INDEX_ORIGINATES_AT_VALUE, true);
+                        linetokennumber_ptr = vocab.get_line_token_number(composite_ptr, head->i + INDEX_ORIGINATES_AT_VALUE);
+                    }
+                    catch(ala_exception& e)
+                    {
+                        std::cerr << e.what() << '\n';
+                    } 
+
+                    std::cout<< head->i << "(" << linetokennumber_ptr->l << ", " << linetokennumber_ptr->t << ") ";                    
+                }
+            }            
+        }
+        if (!found)
+        {
+            if (arg_proper.i)
+            {
+                if (head == NULL)
+                { 
+                     try 
+                    {
+                        head = reinterpret_cast<INDEX_PTR>(cc_tokenizer::allocator<char>().allocate(sizeof(INDEX)));
+                        head->next = NULL;
+                        head->prev = NULL;
+
+                        head->i = CHAT_BOT_SKIP_GRAM_UNKNOWN_TOKEN_NUMERIC_VALUE;
+                    }
+                    catch(const std::bad_alloc& e)
+                    {
+                        std::cerr << e.what() << '\n';
+                    }
+                    catch(const std::length_error& e)
+                    {
+                        std::cerr << e.what() << '\n';
+                    }              
+                }
+                else
+                {
+                    ptr = head;
+
+                    while (ptr->next != NULL)
+                    {
+                        ptr = ptr->next;
+                    }
+
+                    try
+                    {
+                        ptr->next = reinterpret_cast<INDEX_PTR>(cc_tokenizer::allocator<char>().allocate(sizeof(INDEX)));
+                        ptr->next->next = NULL;
+                        ptr->next->prev = NULL;
+
+                        ptr = ptr->next;
+
+                        ptr->i = CHAT_BOT_SKIP_GRAM_UNKNOWN_TOKEN_NUMERIC_VALUE;
+                    }
+                    catch(const std::bad_alloc& e)
+                    {
+                        std::cerr << e.what() << '\n';
+                    }
+                    catch(const std::length_error& e)
+                    {
+                        std::cerr << e.what() << '\n';
+                    }                                        
+                }
+                std::cout<< argv[i + 1] << "(" << CHAT_BOT_SKIP_GRAM_UNKNOWN_TOKEN_STRING_LITERAL << ") ";
             }
+        }
+        else
+        {
+            found = false;
         }        
     }
 
+    if (head)
+    {
+        std::cout<< std::endl;
+    }
 
     //////////
 
     ptr = head;
-    while (ptr)
+
+    if (!arg_proper.i)
     {
-        //std::cout<< ptr->i << std::endl;
-
-        //for (cc_tokenizer::string_character_traits<char>::size_type j = 0; j < SKIP_GRAM_EMBEDDNG_VECTOR_SIZE; j++)
-        //{
-            //std::cout<< W1[ptr->i*SKIP_GRAM_EMBEDDNG_VECTOR_SIZE + j] << ", ";            
-        //}
-
-        INDEX_PTR next_ptr = ptr->next;
-
-        while (next_ptr)
+        while (ptr)
         {
-            //std::cout<< ptr->i << ", " << next_ptr->i << std::endl;
+            //std::cout<< ptr->i << std::endl;
 
-            //w1trainedParser.get_line_by_number(ptr->i + 1);
-            //std::cout<< "Line number = " << ptr->i << " - " << w1trainedParser.get_token_by_number(1).c_str() << ", ";
-            //w1trainedParser.get_line_by_number(next_ptr->i + 1);
-            //std::cout<< "Line number = " << next_ptr->i << " - " << w1trainedParser.get_token_by_number(1).c_str() << std::endl;
+            //for (cc_tokenizer::string_character_traits<char>::size_type j = 0; j < SKIP_GRAM_EMBEDDNG_VECTOR_SIZE; j++)
+            //{
+                //std::cout<< W1[ptr->i*SKIP_GRAM_EMBEDDNG_VECTOR_SIZE + j] << ", ";            
+            //}
 
-            std::cout<< vocab[ptr->i + INDEX_ORIGINATES_AT_VALUE].c_str() << " -> " << vocab[next_ptr->i + INDEX_ORIGINATES_AT_VALUE].c_str() << std::endl;
+            INDEX_PTR next_ptr = ptr->next;
 
-            try
+            while (next_ptr)
             {
+                //std::cout<< ptr->i << ", " << next_ptr->i << std::endl;
 
-                Collective<double> u, v;
+                //w1trainedParser.get_line_by_number(ptr->i + 1);
+                //std::cout<< "Line number = " << ptr->i << " - " << w1trainedParser.get_token_by_number(1).c_str() << ", ";
+                //w1trainedParser.get_line_by_number(next_ptr->i + 1);
+                //std::cout<< "Line number = " << next_ptr->i << " - " << w1trainedParser.get_token_by_number(1).c_str() << std::endl;
 
-                if (arg_average.i && arg_w1.i && arg_w1.argc)
-                {                    
-                    //u = Collective<double>{W1.slice(ptr->i*SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE), DIMENSIONS{SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, 1, NULL, NULL}};
-                    u = W1.slice(ptr->i*SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, DIMENSIONS{SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, 1, NULL, NULL});
-                }
-                else 
+                //std::cout<< vocab[ptr->i + INDEX_ORIGINATES_AT_VALUE].c_str() << " -> " << vocab[next_ptr->i + INDEX_ORIGINATES_AT_VALUE].c_str() << std::endl;
+
+                std::cout<< vocab(ptr->i + INDEX_ORIGINATES_AT_VALUE, true).c_str() << "(" << ptr->i << ")"<< " -> " << vocab(next_ptr->i + INDEX_ORIGINATES_AT_VALUE, true).c_str() << "(" << next_ptr->i << ") " << std::endl;
+
+                try
                 {
+
+                    Collective<double> u, v;
+
+                    if (arg_average.i && arg_w1.i && arg_w1.argc)
+                    {                    
+                        //u = Collective<double>{W1.slice(ptr->i*SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE), DIMENSIONS{SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, 1, NULL, NULL}};
+                        u = W1.slice(ptr->i*SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, DIMENSIONS{SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, 1, NULL, NULL});
+                    }
+                    else 
+                    {
+                        /*
+                            This line directly prints the cosine similarity between two vectors.
+                            The cosine similarity value ranges between -1 (completely opposite vectors) and 1 (identical vectors).
+                            A value of 0 would indicate orthogonality (no similarity).
+                        */
+                        //u = Collective<double>{W2.slice(ptr->i*SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE), DIMENSIONS{SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, 1, NULL, NULL}};
+                        u = W2_transposed.slice(ptr->i*SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, DIMENSIONS{SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, 1, NULL, NULL});
+                    }
+
+                    /*for (int i = 0; i < SKIP_GRAM_EMBEDDNG_VECTOR_SIZE; i++)
+                    {
+                        std::cout<< u[i] << ", ";
+                    }
+                    std::cout<< std::endl;*/
+                    if (arg_average.i && arg_w1.i && arg_w1.argc)
+                    {
+                        //v = Collective<double>{W1.slice(next_ptr->i*SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE), DIMENSIONS{1, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, NULL, NULL}};
+                        v = W1.slice(next_ptr->i*SKIP_GRAM_EMBEDDNG_VECTOR_SIZE,DIMENSIONS{1, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, NULL, NULL});
+                    }
+                    else 
+                    {
+                        //v = Collective<double>{W2.slice(next_ptr->i*SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE), DIMENSIONS{1, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, NULL, NULL}};
+                        v = W2_transposed.slice(next_ptr->i*SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, DIMENSIONS{1, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, NULL, NULL});
+                    }
+                    /*for (int i = 0; i < SKIP_GRAM_EMBEDDNG_VECTOR_SIZE; i++)
+                    {
+                        std::cout<< v[i] << ", ";
+                    }
+                    std::cout<< std::endl;*/
+
+                    std::cout<< "Cosine Similarity = " << Numcy::Spatial::Distance::cosine(u, v) << ", ";
+
                     /*
-                        This line directly prints the cosine similarity between two vectors.
-                        The cosine similarity value ranges between -1 (completely opposite vectors) and 1 (identical vectors).
-                        A value of 0 would indicate orthogonality (no similarity).
-                     */
-                    //u = Collective<double>{W2.slice(ptr->i*SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE), DIMENSIONS{SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, 1, NULL, NULL}};
-                    u = W2.slice(ptr->i*SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, DIMENSIONS{SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, 1, NULL, NULL});
+                        This line calculates the cosine distance, which is 1 - cosine similarity.
+                        Cosine distance transforms the similarity measure into a metric where 0 represents identical vectors,
+                        and 1 represents vectors that are completely dissimilar (at 90° or 180°).
+                    */
+                    //Collective<double> u1 = Collective<double>{W1.slice(ptr->i*SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE), DIMENSIONS{SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, 1, NULL, NULL}};
+                    //Collective<double> v1 = Collective<double>{W1.slice(next_ptr->i*SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE), DIMENSIONS{1, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, NULL, NULL}};
+                    /*
+                         If the cosine similarity is negative (which can happen when two vectors point in opposite directions),
+                        then deducting it from 1 (i.e., 1 - cosine similarity) would result in a value greater than 1.
+                        This is problematic if you're expecting a distance or similarity metric that should be constrained 
+                        between 0 and 1.
+                        If you don't want negative values to affect your metric,
+                        you can consider taking the absolute value of cosine similarity for a meaningful distance metric.
+                        This way, you're ensuring that even opposite vectors are treated in a range that makes sense for your application
+                    */
+                    std::cout<< "Cosine Distance = " << 1 -  std::abs(Numcy::Spatial::Distance::cosine(u, v)) << std::endl;
                 }
-
-                /*for (int i = 0; i < SKIP_GRAM_EMBEDDNG_VECTOR_SIZE; i++)
+                catch(const std::bad_alloc& e)
                 {
-                    std::cout<< u[i] << ", ";
+                    std::cerr << e.what() << '\n';
                 }
-                std::cout<< std::endl;*/
-                if (arg_average.i && arg_w1.i && arg_w1.argc)
+                catch(const std::length_error& e)
                 {
-                    //v = Collective<double>{W1.slice(next_ptr->i*SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE), DIMENSIONS{1, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, NULL, NULL}};
-                    v = W1.slice(next_ptr->i*SKIP_GRAM_EMBEDDNG_VECTOR_SIZE,DIMENSIONS{1, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, NULL, NULL});
+                    std::cerr << e.what() << "\n";
                 }
-                else 
+                catch(ala_exception& e)
                 {
-                    //v = Collective<double>{W2.slice(next_ptr->i*SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE), DIMENSIONS{1, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, NULL, NULL}};
-                    v = W2.slice(next_ptr->i*SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, DIMENSIONS{1, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, NULL, NULL});
+                    std::cerr << e.what() << "\n";
                 }
-                /*for (int i = 0; i < SKIP_GRAM_EMBEDDNG_VECTOR_SIZE; i++)
-                {
-                    std::cout<< v[i] << ", ";
-                }
-                std::cout<< std::endl;*/
-
-                std::cout<< "Cosine Similarity = " << Numcy::Spatial::Distance::cosine(u, v) << ", ";
-
-                /*
-                    This line calculates the cosine distance, which is 1 - cosine similarity.
-                    Cosine distance transforms the similarity measure into a metric where 0 represents identical vectors,
-                    and 1 represents vectors that are completely dissimilar (at 90° or 180°).
-                 */
-                //Collective<double> u1 = Collective<double>{W1.slice(ptr->i*SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE), DIMENSIONS{SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, 1, NULL, NULL}};
-                //Collective<double> v1 = Collective<double>{W1.slice(next_ptr->i*SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE), DIMENSIONS{1, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, NULL, NULL}};
-                /*
-                     If the cosine similarity is negative (which can happen when two vectors point in opposite directions),
-                     then deducting it from 1 (i.e., 1 - cosine similarity) would result in a value greater than 1.
-                     This is problematic if you're expecting a distance or similarity metric that should be constrained 
-                     between 0 and 1.
-                     If you don't want negative values to affect your metric,
-                     you can consider taking the absolute value of cosine similarity for a meaningful distance metric.
-                     This way, you're ensuring that even opposite vectors are treated in a range that makes sense for your application
-                 */
-                std::cout<< "Cosine Distance = " << 1 -  std::abs(Numcy::Spatial::Distance::cosine(u, v)) << std::endl;
-            }
-            catch(const std::bad_alloc& e)
-            {
-                std::cerr << e.what() << '\n';
-            }
-            catch(const std::length_error& e)
-            {
-                std::cerr << e.what() << "\n";
-            }
-            catch(ala_exception& e)
-            {
-                std::cerr << e.what() << "\n";
-            }
             
-            /*double similarity = 1 - */ //Numcy::Spatial::Distance::cosine();
+                /*double similarity = 1 - */ //Numcy::Spatial::Distance::cosine();
            
-            next_ptr = next_ptr->next;
+                next_ptr = next_ptr->next;
+            }
+
+            //std::cout<< std::endl;
+
+            //Numcy::Spatial::Distance::cosine();
+
+            ptr = ptr->next;
         }
-
-        //std::cout<< std::endl;
-
-        //Numcy::Spatial::Distance::cosine();
-
-        ptr = ptr->next;
+    }
+    else 
+    {
+        try
+        {                    
+            class proper<double> chatbot(head, vocab, W1, W2);            
+        }
+        catch (ala_exception& e)
+        {
+            std::cerr<< "main() -> " << e.what() << std::endl;
+        }
     }
 
     /////////
