@@ -60,17 +60,19 @@ class proper
                         for (cc_tokenizer::string_character_traits<char>::size_type i = 0; i < W2.getShape().getNumberOfColumns(); i++)
                         {                                                             
                             context_word_embedding = W2.slice(i, DIMENSIONS{1, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, NULL, NULL}, AXIS_NONE);
+                            
+                            E cs =Numcy::Spatial::Distance::cosine<E>(vocabulary_word_embedding, context_word_embedding);
 
-                            std::cout<< "Cosine Similarity = " << Numcy::Spatial::Distance::cosine<E>(vocabulary_word_embedding, context_word_embedding) << std::endl;
+                            //std::cout<< "Cosine Similarity = " << cs << std::endl;
 
-                            if (count < (n - 1))
+                            if (count < (n /*- 1*/))
                             {
                                 if (head_context_word_indices == NULL)
                                 {
                                     head_context_word_indices = reinterpret_cast<CONTEXT_WORD_INDICES_PTR>(cc_tokenizer::allocator<char>().allocate(sizeof(CONTEXT_WORD_INDICES)));
                                     head_context_word_indices->i_target_word = target_index_ptr->i;
                                     head_context_word_indices->i_context_word = i;
-                                    head_context_word_indices->cosine_similarity = Numcy::Spatial::Distance::cosine<E>(vocabulary_word_embedding, context_word_embedding);
+                                    head_context_word_indices->cosine_similarity = cs /*Numcy::Spatial::Distance::cosine<E>(vocabulary_word_embedding, context_word_embedding)*/;
 
                                     head_context_word_indices->next = NULL;
                                     head_context_word_indices->prev = NULL;
@@ -88,7 +90,7 @@ class proper
 
                                     context_word_index_ptr->i_target_word = target_index_ptr->i;
                                     context_word_index_ptr->i_context_word = i; 
-                                    context_word_index_ptr->cosine_similarity = Numcy::Spatial::Distance::cosine<E>(vocabulary_word_embedding, context_word_embedding);
+                                    context_word_index_ptr->cosine_similarity = cs /*Numcy::Spatial::Distance::cosine<E>(vocabulary_word_embedding, context_word_embedding)*/;
 
                                     if (ptr == NULL)
                                     {
@@ -98,13 +100,13 @@ class proper
 
                                 count = count + 1;
                             }
-                            else // Make sure that linked list atleast has two elements/links
+                            else 
                             {
                                 // Sort from ptr to NULL, using bubble sort which sorts in ascending order                                
                                 while (1)
                                 {
                                     bool swapped = false;
-                                    CONTEXT_WORD_INDICES_PTR current = ptr; // Null Check for ptr is not necessary as it is already checked that n > 1
+                                    CONTEXT_WORD_INDICES_PTR current = ptr; 
                                     CONTEXT_WORD_INDICES_PTR next = ptr->next; 
 
                                     while (next != NULL)
@@ -139,10 +141,35 @@ class proper
                                         break;
                                     }                                        
                                 }
+
+                                /* Find if this cosine similarity is greater than any of the n cosine similarities already in links */                                
+                                CONTEXT_WORD_INDICES_PTR current = /*head_context_word_indices*/ ptr; 
+                                while (current)
+                                {                                    
+                                    if (cs > current->cosine_similarity)
+                                    {
+                                        if (current->next)
+                                        {
+                                            if (current->next->cosine_similarity > cs)
+                                            {
+                                                current->cosine_similarity = cs;
+                                                current->i_target_word = target_index_ptr->i;
+                                                current->i_context_word = i;                                                  
+                                            }                                           
+                                        }
+                                        else
+                                        {
+                                            current->cosine_similarity = cs;
+                                            current->i_target_word = target_index_ptr->i;
+                                            current->i_context_word = i;
+                                        }
+                                    }
+
+                                    current = current->next;
+                                }
                             }                            
                         }                        
-                    }
-                    
+                    }                    
                     target_index_ptr = target_index_ptr->next;
                 }
             }
@@ -157,6 +184,51 @@ class proper
             catch (ala_exception& e)
             {
                 throw ala_exception(cc_tokenizer::String<char>("proper::proper() -> ") + e.what());
+            }
+        }
+
+        void dsplay_list_of_context_words_for_each_target_word(CORPUS& vocab, cc_tokenizer::string_character_traits<char>::size_type n = DEFAULT_NUMBER_OF_CONTEXT_WORDS)
+        {
+            COMPOSITE_PTR composite_ptr = NULL;
+            LINETOKENNUMBER_PTR linetokennumber_ptr = NULL;
+            CONTEXT_WORD_INDICES_PTR ptr = head_context_word_indices;
+
+            while (ptr)
+            {
+                //std::cout<< "Target Word Index = " << ptr->i_target_word << ", Context Word Index = " << ptr->i_context_word << ", Cosine Similarity = " << ptr->cosine_similarity << std::endl;
+
+                std::cout<< vocab(ptr->i_target_word + INDEX_ORIGINATES_AT_VALUE, true).c_str() << "(" << ptr->i_target_word << ", ";
+                composite_ptr = vocab.get_composite_ptr(ptr->i_target_word + INDEX_ORIGINATES_AT_VALUE, true);
+                linetokennumber_ptr = vocab.get_line_token_number(composite_ptr, ptr->i_target_word + INDEX_ORIGINATES_AT_VALUE);
+                std::cout<< linetokennumber_ptr->index <<", " << linetokennumber_ptr->l << ", " << linetokennumber_ptr->t << ")" << std::endl;
+                for (cc_tokenizer::string_character_traits<char>::size_type i = 0; i < n; i++)
+                {
+                    std::cout<< "------> " << vocab(ptr->i_context_word + INDEX_ORIGINATES_AT_VALUE, true).c_str() << "(" << ptr->i_context_word << ", ";
+                    composite_ptr = vocab.get_composite_ptr(ptr->i_context_word + INDEX_ORIGINATES_AT_VALUE, true);
+                    linetokennumber_ptr = vocab.get_line_token_number(composite_ptr, ptr->i_context_word + INDEX_ORIGINATES_AT_VALUE);
+                    std::cout<< linetokennumber_ptr->index <<", " << linetokennumber_ptr->l << ", " << linetokennumber_ptr->t << ")" << std::endl;
+
+                    ptr = ptr->next;
+                }                
+            }
+        }
+
+        ~proper()
+        {
+            if (head_context_word_indices == NULL)
+            {
+                return;
+            }
+
+            CONTEXT_WORD_INDICES_PTR context_word_index_ptr = head_context_word_indices;
+
+            while (context_word_index_ptr != NULL)
+            {
+                CONTEXT_WORD_INDICES_PTR next = context_word_index_ptr->next;
+
+                cc_tokenizer::allocator<char>().deallocate(reinterpret_cast<char*>(context_word_index_ptr), sizeof(CONTEXT_WORD_INDICES));
+
+                context_word_index_ptr = next;
             }
         }
 

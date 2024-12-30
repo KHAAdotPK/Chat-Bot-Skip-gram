@@ -536,7 +536,9 @@ int main(int argc, char* argv[])
     {
         try
         {                    
-            class proper<double> chatbot(head, vocab, W1, W2);            
+            class proper<double> chatbot(head, vocab, W1, W2);
+            
+            chatbot.dsplay_list_of_context_words_for_each_target_word(vocab);
         }
         catch (ala_exception& e)
         {
