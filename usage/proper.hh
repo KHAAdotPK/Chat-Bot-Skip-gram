@@ -197,16 +197,17 @@ class proper
             {
                 //std::cout<< "Target Word Index = " << ptr->i_target_word << ", Context Word Index = " << ptr->i_context_word << ", Cosine Similarity = " << ptr->cosine_similarity << std::endl;
 
-                std::cout<< vocab(ptr->i_target_word + INDEX_ORIGINATES_AT_VALUE, true).c_str() << "(" << ptr->i_target_word << ", ";
+                std::cout<< vocab(ptr->i_target_word + INDEX_ORIGINATES_AT_VALUE, true).c_str() << "(" << ptr->i_target_word << ", i=";
                 composite_ptr = vocab.get_composite_ptr(ptr->i_target_word + INDEX_ORIGINATES_AT_VALUE, true);
                 linetokennumber_ptr = vocab.get_line_token_number(composite_ptr, ptr->i_target_word + INDEX_ORIGINATES_AT_VALUE);
-                std::cout<< linetokennumber_ptr->index <<", " << linetokennumber_ptr->l << ", " << linetokennumber_ptr->t << ")" << std::endl;
+                std::cout<< linetokennumber_ptr->index <<", l=" << linetokennumber_ptr->l << ", t=" << linetokennumber_ptr->t << ")" << std::endl;
                 for (cc_tokenizer::string_character_traits<char>::size_type i = 0; i < n; i++)
                 {
-                    std::cout<< "------> " << vocab(ptr->i_context_word + INDEX_ORIGINATES_AT_VALUE, true).c_str() << "(" << ptr->i_context_word << ", ";
+                    std::cout<< "------> " << vocab(ptr->i_context_word + INDEX_ORIGINATES_AT_VALUE, true).c_str() << "(" << ptr->i_context_word << ", i=";
                     composite_ptr = vocab.get_composite_ptr(ptr->i_context_word + INDEX_ORIGINATES_AT_VALUE, true);
                     linetokennumber_ptr = vocab.get_line_token_number(composite_ptr, ptr->i_context_word + INDEX_ORIGINATES_AT_VALUE);
-                    std::cout<< linetokennumber_ptr->index <<", " << linetokennumber_ptr->l << ", " << linetokennumber_ptr->t << ")" << std::endl;
+                    std::cout<< linetokennumber_ptr->index <<", l=" << linetokennumber_ptr->l << ", t=" << linetokennumber_ptr->t << ")";
+                    std::cout<< " cs=" << ptr->cosine_similarity << std::endl;
 
                     ptr = ptr->next;
                 }                
