@@ -1,0 +1,57 @@
+.\skipy.exe corpus ./INPUT.txt lr 0.001 epoch 10 rs 0.001 loop 0 --input w1p.dat w2p.dat --output w11p.dat w22p.dat verbose
+
+Corpus: ./INPUT.txt
+Dimensions of W1 = 27 X 16
+Dimensions of W2 = 16 X 27
+Epoch# 1 of 10 epochs.
+epoch_loss = (105.185), Average epoch_loss = 3.89576
+Epoch# 2 of 10 epochs.
+epoch_loss = (104.906), Average epoch_loss = 3.88541
+Epoch# 3 of 10 epochs.
+epoch_loss = (104.526), Average epoch_loss = 3.87134
+Epoch# 4 of 10 epochs.
+epoch_loss = (104.132), Average epoch_loss = 3.85674
+Epoch# 5 of 10 epochs.
+epoch_loss = (103.708), Average epoch_loss = 3.84103
+Epoch# 6 of 10 epochs.
+epoch_loss = (103.471), Average epoch_loss = 3.83227
+Epoch# 7 of 10 epochs.
+epoch_loss = (103.242), Average epoch_loss = 3.82378
+Epoch# 8 of 10 epochs.
+epoch_loss = (102.956), Average epoch_loss = 3.81318
+Epoch# 9 of 10 epochs.
+epoch_loss = (102.718), Average epoch_loss = 3.80436
+Epoch# 10 of 10 epochs.
+epoch_loss = (102.525), Average epoch_loss = 3.79723
+Trained input weights written to file: w11p.dat
+Trained output weights written to file: w22p.dat
+
+./weights.exe feeling chills w1 w11p.dat w2 w22p.dat proper
+
+W1: 27 X 16
+W2: 16 X 27
+W2 transposed: 27 X 16
+"Number of target words"(arg_words.argc) = 2
+Target Instances and their indices in vocabulary...
+feeling#0(1, 1) feeling#25(13, 1) chills#24(12, 2)
+feeling(0, i=1, l=1, t=1)
+------> cough(3, i=4, l=2, t=2) cs=-0.0141983
+------> tired(1, i=2, l=1, t=2) cs=-0.00355356
+------> feeling(25, i=26, l=13, t=1) cs=0.208172
+------> dry(22, i=23, l=11, t=3) cs=0.418447
+------> dizziness(19, i=20, l=10, t=2) cs=0.484335
+feeling(25, i=26, l=13, t=1)
+------> morning(16, i=17, l=9, t=1) cs=0.0584307
+------> aching(15, i=16, l=8, t=2) cs=0.153924
+------> fluctuating(8, i=9, l=5, t=2) cs=0.188293
+------> nauseous(17, i=18, l=9, t=2) cs=0.257304
+------> chills(24, i=25, l=12, t=2) cs=0.463015
+chills(24, i=25, l=12, t=2)
+------> dry(22, i=23, l=11, t=3) cs=0.133889
+------> dizziness(19, i=20, l=10, t=2) cs=0.208375
+------> joints(14, i=15, l=8, t=1) cs=0.234417
+------> cough(3, i=4, l=2, t=2) cs=0.275678
+------> morning(16, i=17, l=9, t=1) cs=0.420905
+
+Last good training sesson.
+--------------------------
