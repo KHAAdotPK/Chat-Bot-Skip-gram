@@ -363,6 +363,7 @@ int main(int argc, char* argv[])
                         head->prev = NULL;
 
                         head->i = CHAT_BOT_SKIP_GRAM_UNKNOWN_TOKEN_NUMERIC_VALUE;
+                        head->actual_unknown_token = cc_tokenizer::String<char>(argv[i + 1]);
                     }
                     catch(const std::bad_alloc& e)
                     {
@@ -391,6 +392,7 @@ int main(int argc, char* argv[])
                         ptr = ptr->next;
 
                         ptr->i = CHAT_BOT_SKIP_GRAM_UNKNOWN_TOKEN_NUMERIC_VALUE;
+                        ptr->actual_unknown_token = cc_tokenizer::String<char>(argv[i + 1]);
                     }
                     catch(const std::bad_alloc& e)
                     {
@@ -401,7 +403,7 @@ int main(int argc, char* argv[])
                         std::cerr << e.what() << '\n';
                     }                                        
                 }
-                std::cout<< argv[i + 1] << "(" << CHAT_BOT_SKIP_GRAM_UNKNOWN_TOKEN_STRING_LITERAL << ") ";
+                std::cout<< argv[i + 1] << "(" << CHAT_BOT_SKIP_GRAM_UNKNOWN_TOKEN_STRING_LITERAL << ") ";                
             }
         }
         else
@@ -538,7 +540,7 @@ int main(int argc, char* argv[])
         {                    
             class proper<double> chatbot(head, vocab, W1, W2);
             
-            chatbot.dsplay_list_of_context_words_for_each_target_word(vocab);
+            chatbot.dsplay_list_of_context_words_for_each_target_word(head, vocab);
         }
         catch (ala_exception& e)
         {

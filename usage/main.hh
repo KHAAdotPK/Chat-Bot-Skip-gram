@@ -38,27 +38,7 @@
 #include "../lib/pairs/src/header.hh"
 #include "../lib/Skip-gram/lib/WordEmbedding-Algorithms/Word2Vec/Skip-gram/hyper-parameters.hh"
 
-/*
-    If a token is not part of the vocabulary, this index is used to represent it.
-    The value `cc_tokenizer::String<char>::npos` typically indicates an invalid or undefined position
- */
-#define CHAT_BOT_SKIP_GRAM_UNKNOWN_TOKEN_NUMERIC_VALUE cc_tokenizer::String<char>::npos
-/*
-    String literal used to represent an unknown token when a token is not part of the vocabulary
- */
-#define CHAT_BOT_SKIP_GRAM_UNKNOWN_TOKEN_STRING_LITERAL "UNKNOWN"
-
-typedef struct index
-{
-    cc_tokenizer::string_character_traits<char>::size_type i;
-
-    struct index* next;
-    struct index* prev;
-} INDEX;
-
-typedef INDEX* INDEX_PTR;
-
-#include "proper.hh"
+#include "./proper.hh"
 
 #define COMMAND "h -h help --help ? /? (Displays the help screen)\n\
 v -v version --version /v (Displays the version number)\n\
