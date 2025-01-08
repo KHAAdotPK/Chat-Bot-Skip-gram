@@ -38,6 +38,7 @@ struct context_word_indices
     cc_tokenizer::string_character_traits<char>::size_type i_target_word; // W1 index
     cc_tokenizer::string_character_traits<char>::size_type i_context_word;  // W2 index
     E cosine_similarity; // Cosine similarity between the target word and the context word
+    E euclidean_distance;
 
     struct context_word_indices* next;
     struct context_word_indices* prev;
@@ -80,6 +81,7 @@ class proper
                             head_context_word_indices->i_target_word = CHAT_BOT_SKIP_GRAM_UNKNOWN_TOKEN_NUMERIC_VALUE;
                             head_context_word_indices->i_context_word = CHAT_BOT_SKIP_GRAM_UNKNOWN_TOKEN_NUMERIC_VALUE;
                             head_context_word_indices->cosine_similarity = 0 /*Numcy::Spatial::Distance::cosine<E>(vocabulary_word_embedding, context_word_embedding)*/;
+                            head_context_word_indices->euclidean_distance = 0;
 
                             head_context_word_indices->next = NULL;
                             head_context_word_indices->prev = NULL;
@@ -95,7 +97,8 @@ class proper
 
                             context_word_index_ptr->i_target_word = CHAT_BOT_SKIP_GRAM_UNKNOWN_TOKEN_NUMERIC_VALUE;
                             context_word_index_ptr->i_context_word = CHAT_BOT_SKIP_GRAM_UNKNOWN_TOKEN_NUMERIC_VALUE; 
-                            context_word_index_ptr->cosine_similarity = 0 /*Numcy::Spatial::Distance::cosine<E>(vocabulary_word_embedding, context_word_embedding)*/;                            
+                            context_word_index_ptr->cosine_similarity = 0 /*Numcy::Spatial::Distance::cosine<E>(vocabulary_word_embedding, context_word_embedding)*/;
+                            context_word_index_ptr->euclidean_distance = 0;
                         }
                     }
 
@@ -110,6 +113,8 @@ class proper
                             context_word_embedding = W2.slice(i, DIMENSIONS{1, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, NULL, NULL}, AXIS_NONE);
                             
                             E cs =Numcy::Spatial::Distance::cosine<E>(vocabulary_word_embedding, context_word_embedding);
+                            Collective<E> context_word_embedding_t = Numcy::transpose<E>(context_word_embedding); 
+                            E ed = Numcy::enorm_distance<E>(vocabulary_word_embedding, context_word_embedding_t);
 
                             //std::cout<< "Cosine Similarity = " << cs << std::endl;
 
@@ -121,6 +126,7 @@ class proper
                                     head_context_word_indices->i_target_word = target_index_ptr->i;
                                     head_context_word_indices->i_context_word = i;
                                     head_context_word_indices->cosine_similarity = cs /*Numcy::Spatial::Distance::cosine<E>(vocabulary_word_embedding, context_word_embedding)*/;
+                                    head_context_word_indices->euclidean_distance = ed;
 
                                     head_context_word_indices->next = NULL;
                                     head_context_word_indices->prev = NULL;
@@ -139,6 +145,7 @@ class proper
                                     context_word_index_ptr->i_target_word = target_index_ptr->i;
                                     context_word_index_ptr->i_context_word = i; 
                                     context_word_index_ptr->cosine_similarity = cs /*Numcy::Spatial::Distance::cosine<E>(vocabulary_word_embedding, context_word_embedding)*/;
+                                    context_word_index_ptr->euclidean_distance = ed;
 
                                     if (ptr == NULL)
                                     {
@@ -164,8 +171,11 @@ class proper
                                         {    
                                             // Swap cosine_similarity
                                             E cosine_similarity = current->cosine_similarity;
+                                            E euclidean_distance = current->euclidean_distance;
                                             current->cosine_similarity = next->cosine_similarity;
+                                            current->euclidean_distance = next->euclidean_distance;
                                             next->cosine_similarity = cosine_similarity;
+                                            next->euclidean_distance = euclidean_distance;
 
                                             // Swap i_target_word
                                             cc_tokenizer::string_character_traits<char>::size_type i_target_word = current->i_target_word;
@@ -201,6 +211,7 @@ class proper
                                             if (current->next->cosine_similarity > cs)
                                             {
                                                 current->cosine_similarity = cs;
+                                                current->euclidean_distance = ed;
                                                 current->i_target_word = target_index_ptr->i;
                                                 current->i_context_word = i;                                                  
                                             }                                           
@@ -208,6 +219,7 @@ class proper
                                         else
                                         {
                                             current->cosine_similarity = cs;
+                                            current->euclidean_distance = ed;
                                             current->i_target_word = target_index_ptr->i;
                                             current->i_context_word = i;
                                         }
@@ -257,7 +269,7 @@ class proper
                         composite_ptr = vocab.get_composite_ptr(ptr->i_context_word + INDEX_ORIGINATES_AT_VALUE, true);
                         linetokennumber_ptr = vocab.get_line_token_number(composite_ptr, ptr->i_context_word + INDEX_ORIGINATES_AT_VALUE);
                         std::cout<< linetokennumber_ptr->index <<", l=" << linetokennumber_ptr->l << ", t=" << linetokennumber_ptr->t << ")";
-                        std::cout<< " cs=" << ptr->cosine_similarity << std::endl; 
+                        std::cout<< " cs=" << ptr->cosine_similarity << " ed=" << ptr->euclidean_distance << std::endl; 
                         ptr = ptr->next;                   
                     }
                 }
