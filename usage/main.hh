@@ -8,6 +8,14 @@
 #ifndef READ_TRAINED_SKIP_GRAM_WEIGHTS_TEST_APP_HH
 #define READ_TRAINED_SKIP_GRAM_WEIGHTS_TEST_APP_HH
 
+#include "../lib/argsv-cpp/lib/parser/parser.hh"
+#include "../lib/read_write_weights/header.hh"
+#include "./../lib/sundry/cooked_read_new.hh"
+#include "./../lib/corpus/corpus.hh"
+#include "../lib/Numcy/header.hh"
+#include "../lib/pairs/src/header.hh"
+#include "../lib/Skip-gram/lib/WordEmbedding-Algorithms/Word2Vec/Skip-gram/hyper-parameters.hh"
+
 #define DEFAULT_CHAT_BOT_SKIP_GRAM_VOCABULARY_FILE_NAME "INPUT.txt"
 
 #ifdef GRAMMAR_END_OF_TOKEN_MARKER
@@ -28,15 +36,15 @@
 #ifdef SKIP_GRAM_CONTEXT_WINDOW_SIZE
 #undef SKIP_GRAM_CONTEXT_WINDOW_SIZE
 #endif
-#define SKIP_GRAM_CONTEXT_WINDOW_SIZE 4
+#define SKIP_GRAM_CONTEXT_WINDOW_SIZE 2
 
-#include "../lib/argsv-cpp/lib/parser/parser.hh"
+/*#include "../lib/argsv-cpp/lib/parser/parser.hh"
 #include "../lib/read_write_weights/header.hh"
 #include "./../lib/sundry/cooked_read_new.hh"
 #include "./../lib/corpus/corpus.hh"
 #include "../lib/Numcy/header.hh"
 #include "../lib/pairs/src/header.hh"
-#include "../lib/Skip-gram/lib/WordEmbedding-Algorithms/Word2Vec/Skip-gram/hyper-parameters.hh"
+#include "../lib/Skip-gram/lib/WordEmbedding-Algorithms/Word2Vec/Skip-gram/hyper-parameters.hh"*/
 
 #include "./proper.hh"
 

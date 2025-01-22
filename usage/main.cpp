@@ -541,6 +541,11 @@ int main(int argc, char* argv[])
             class proper<double> chatbot(head, vocab, W1, W2);
             
             chatbot.dsplay_list_of_context_words_for_each_target_word(head, vocab);
+
+            /*
+                Soni: WORKING HERE.
+             */
+            chatbot.predict_next_token(head, vocab);
         }
         catch (ala_exception& e)
         {

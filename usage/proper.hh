@@ -302,6 +302,54 @@ class proper
             }            
         }
 
+        void predict_next_token(INDEX_PTR head_target_word_indices, CORPUS& vocab, cc_tokenizer::string_character_traits<char>::size_type n = DEFAULT_NUMBER_OF_CONTEXT_WORDS) throw (ala_exception)
+        {
+            CONTEXT_WORD_INDICES_PTR ptr = head_context_word_indices;
+
+            if (ptr == NULL)
+            {
+                throw ala_exception("proper::predict_next_token() Error: No context words found for target words.");
+            }
+
+            cc_tokenizer::String<char> target_word;
+            cc_tokenizer::String<char> context_word;
+            E cs = 0;
+
+            while (1)
+            {
+                if (!(ptr->i_target_word == CHAT_BOT_SKIP_GRAM_UNKNOWN_TOKEN_NUMERIC_VALUE && ptr->i_context_word == CHAT_BOT_SKIP_GRAM_UNKNOWN_TOKEN_NUMERIC_VALUE && ptr->cosine_similarity == 0 && ptr->euclidean_distance == 0))
+                {
+                    if (target_word.compare(vocab(ptr->i_target_word + INDEX_ORIGINATES_AT_VALUE, true))) // New target word
+                    {
+                        target_word = vocab(ptr->i_target_word + INDEX_ORIGINATES_AT_VALUE, true);
+                        context_word = vocab(ptr->i_context_word + INDEX_ORIGINATES_AT_VALUE, true);
+                        cs = ptr->cosine_similarity;
+                    }
+                    else // Same target_word, check cosine similarity 
+                    {
+                        if (cs < ptr->cosine_similarity)
+                        {
+                            context_word = vocab(ptr->i_context_word + INDEX_ORIGINATES_AT_VALUE, true);
+                            cs = ptr->cosine_similarity;
+                        }
+                    }
+                }
+
+                if (ptr->next == NULL)
+                {
+                    std::cout<< "Target word: " << target_word.c_str() << std::endl;
+                    std::cout<< "Context word: " << context_word.c_str() << std::endl;
+                }
+                
+                ptr = ptr->next;
+
+                if (ptr == NULL)
+                {
+                    break;
+                }
+            }
+        }
+
         ~proper()
         {
             if (head_context_word_indices == NULL)
