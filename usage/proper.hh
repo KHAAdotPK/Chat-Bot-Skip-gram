@@ -312,8 +312,14 @@ class proper
             }
 
             cc_tokenizer::String<char> target_word;
+            COMPOSITE_PTR target_composite_ptr = NULL;
+            LINETOKENNUMBER_PTR target_linetokennumber_ptr = NULL;
+
             cc_tokenizer::String<char> context_word;
-            E cs = 0;
+            COMPOSITE_PTR context_composite_ptr = NULL;
+            LINETOKENNUMBER_PTR context_linetokennumber_ptr = NULL;
+
+            E cs = 0;            
 
             while (1)
             {
@@ -324,6 +330,20 @@ class proper
                         target_word = vocab(ptr->i_target_word + INDEX_ORIGINATES_AT_VALUE, true);
                         context_word = vocab(ptr->i_context_word + INDEX_ORIGINATES_AT_VALUE, true);
                         cs = ptr->cosine_similarity;
+
+                        target_composite_ptr = vocab.get_composite_ptr(ptr->i_target_word + INDEX_ORIGINATES_AT_VALUE, true);
+                        target_linetokennumber_ptr = vocab.get_line_token_number(target_composite_ptr, ptr->i_target_word + INDEX_ORIGINATES_AT_VALUE);
+
+                        context_composite_ptr = vocab.get_composite_ptr(ptr->i_context_word + INDEX_ORIGINATES_AT_VALUE, true);
+                        context_linetokennumber_ptr = vocab.get_line_token_number(context_composite_ptr, ptr->i_context_word + INDEX_ORIGINATES_AT_VALUE);
+
+                        if (target_linetokennumber_ptr->l == context_linetokennumber_ptr->l)
+                        {
+                            std::cout<< "Target word: " << target_word.c_str() << std::endl;
+                            std::cout<< "Context word: " << context_word.c_str() << std::endl;
+
+                            break;
+                        }
                     }
                     else // Same target_word, check cosine similarity 
                     {
@@ -331,6 +351,20 @@ class proper
                         {
                             context_word = vocab(ptr->i_context_word + INDEX_ORIGINATES_AT_VALUE, true);
                             cs = ptr->cosine_similarity;
+                        }
+
+                        target_composite_ptr = vocab.get_composite_ptr(ptr->i_target_word + INDEX_ORIGINATES_AT_VALUE, true);
+                        target_linetokennumber_ptr = vocab.get_line_token_number(target_composite_ptr, ptr->i_target_word + INDEX_ORIGINATES_AT_VALUE);
+
+                        context_composite_ptr = vocab.get_composite_ptr(ptr->i_context_word + INDEX_ORIGINATES_AT_VALUE, true);
+                        context_linetokennumber_ptr = vocab.get_line_token_number(context_composite_ptr, ptr->i_context_word + INDEX_ORIGINATES_AT_VALUE);
+
+                        if (target_linetokennumber_ptr->l == context_linetokennumber_ptr->l)
+                        {
+                            std::cout<< "Target word: " << vocab(ptr->i_target_word + INDEX_ORIGINATES_AT_VALUE, true).c_str() << std::endl;
+                            std::cout<< "Context word: " << vocab(ptr->i_context_word + INDEX_ORIGINATES_AT_VALUE, true).c_str() << std::endl;
+
+                            break;
                         }
                     }
                 }
