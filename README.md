@@ -40,5 +40,17 @@ The Chat Bot Skip-Gram aims to leverage word embeddings trained via the [skip-gr
 - `proper --proper`
     - To process the user inputs in the chatbot, this option ensures the correct usage of trained weights; W1 for input word embeddings and W2 for context words.
 
+### Building the Language Model
+This project is gradually evolving into a chatbot by building a language model (LM) using the trained Skip-gram embeddings. The approach focuses on incremental steps to achieve a fully functional conversational AI.
+
+#### Build in Steps
+Transitioning to a chatbot doesn't have to happen all at once. Focusing on small, incremental improvements. For example:
+
+- **Step 1**: Use trained Skip-gram embeddings to suggest words or phrases.
+- **Step 2**: Integrate a sequence-based model for simple predictions.
+- **Step 3**: Expand to more complex dialogue flows.
+
+This step-by-step progression ensures that each stage is functional and builds a strong foundation for the next level of complexity.
+
 ### License
-This project is governed by a license, the details of which can be located in the accompanying file named 'LICENSE.' Please refer to this file for comprehensive information.   
+This project is governed by a license, the details of which can be located in the accompanying file named 'LICENSE.' Please refer to this file for comprehensive information.
