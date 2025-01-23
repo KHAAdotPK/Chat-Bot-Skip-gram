@@ -18,8 +18,9 @@
  */
 #define CHAT_BOT_SKIP_GRAM_UNKNOWN_TOKEN_STRING_LITERAL "UNKNOWN"
 
-
+#ifndef DEFAULT_NUMBER_OF_CONTEXT_WORDS
 #define DEFAULT_NUMBER_OF_CONTEXT_WORDS 5 // Default number of context words to consider for each target word
+#endif
 
 typedef struct index
 {
@@ -301,10 +302,52 @@ class proper
                 }                
             }            
         }
-
+        
+        /**
+         * @brief Predict the next token based on cosine similarity between target and context words.
+         *
+         * This function identifies the most relevant context word for a given target word by comparing 
+         * cosine similarity values of their embeddings. It also prioritizes context words on the same 
+         * line as the target word when applicable.
+         *
+         * @param head_target_word_indices Pointer to the head of the linked list containing target word indices.
+         * @param vocab Reference to the vocabulary object that provides word lookups and embeddings.
+         * @param n Number of context words to consider (default: DEFAULT_NUMBER_OF_CONTEXT_WORDS).
+         *
+         * @throws ala_exception If the context word indices are not properly initialized.
+         *
+         * ### Key Steps:
+         * 1. **Validation**: Ensures the context word indices are non-null; otherwise, throws an exception.
+         * 2. **Initialization**: Sets up variables for target and context words, their embeddings, line/token 
+         *    metadata, and cosine similarity metrics.
+         * 3. **Processing Loop**:
+         *    - Iterates through the linked list of context words.
+         *    - Updates target word information when encountering a new target word.
+         *    - Compares cosine similarity between the target word and potential context words.
+         *    - Prioritizes context words on the same line as the target word.
+         *    - Keeps track of the context word with the highest cosine similarity for each target word.
+         * 4. **Output**:
+         *    - Prints the target word, its line and token number, and the best-matching context word.
+         *    - If no suitable match is found, outputs the most recently processed words.
+         *
+         * ### Edge Cases:
+         * - Throws an exception if the linked list is empty or contains invalid data.
+         * - Ensures cosine similarity comparisons are valid and prioritize context words on the same line 
+         *   when applicable.
+         *
+         * ### Example Output:
+         * Target word: example_word_1 (line 5, token 3)
+         * Context word: example_word_2 (line 5, token 7)
+         *
+         * @note The function assumes that the linked list and vocabulary have been correctly initialized 
+         *       and populated with valid embeddings and metadata. Additionally, the heuristic prioritizing 
+         *       same-line context words enhances prediction relevance based on spatial proximity in the input data.
+         */
         void predict_next_token(INDEX_PTR head_target_word_indices, CORPUS& vocab, cc_tokenizer::string_character_traits<char>::size_type n = DEFAULT_NUMBER_OF_CONTEXT_WORDS) throw (ala_exception)
         {
             CONTEXT_WORD_INDICES_PTR ptr = head_context_word_indices;
+
+            /*CONTEXT_WORD_INDICES_PTR context_ptr = NULL;*/
 
             if (ptr == NULL)
             {
@@ -319,7 +362,8 @@ class proper
             COMPOSITE_PTR context_composite_ptr = NULL;
             LINETOKENNUMBER_PTR context_linetokennumber_ptr = NULL;
 
-            E cs = 0;            
+            E cs = 0; 
+            bool same_line_flag = false;           
 
             while (1)
             {
@@ -328,51 +372,103 @@ class proper
                     if (target_word.compare(vocab(ptr->i_target_word + INDEX_ORIGINATES_AT_VALUE, true))) // New target word
                     {
                         target_word = vocab(ptr->i_target_word + INDEX_ORIGINATES_AT_VALUE, true);
-                        context_word = vocab(ptr->i_context_word + INDEX_ORIGINATES_AT_VALUE, true);
-                        cs = ptr->cosine_similarity;
 
                         target_composite_ptr = vocab.get_composite_ptr(ptr->i_target_word + INDEX_ORIGINATES_AT_VALUE, true);
                         target_linetokennumber_ptr = vocab.get_line_token_number(target_composite_ptr, ptr->i_target_word + INDEX_ORIGINATES_AT_VALUE);
 
-                        context_composite_ptr = vocab.get_composite_ptr(ptr->i_context_word + INDEX_ORIGINATES_AT_VALUE, true);
-                        context_linetokennumber_ptr = vocab.get_line_token_number(context_composite_ptr, ptr->i_context_word + INDEX_ORIGINATES_AT_VALUE);
-
-                        if (target_linetokennumber_ptr->l == context_linetokennumber_ptr->l)
-                        {
-                            std::cout<< "Target word: " << target_word.c_str() << std::endl;
-                            std::cout<< "Context word: " << context_word.c_str() << std::endl;
-
-                            break;
-                        }
-                    }
-                    else // Same target_word, check cosine similarity 
-                    {
-                        if (cs < ptr->cosine_similarity)
+                        if (target_word.compare(vocab(ptr->i_context_word + INDEX_ORIGINATES_AT_VALUE, true)))
                         {
                             context_word = vocab(ptr->i_context_word + INDEX_ORIGINATES_AT_VALUE, true);
                             cs = ptr->cosine_similarity;
+                                                
+                            context_composite_ptr = vocab.get_composite_ptr(ptr->i_context_word + INDEX_ORIGINATES_AT_VALUE, true);
+                            context_linetokennumber_ptr = vocab.get_line_token_number(context_composite_ptr, ptr->i_context_word + INDEX_ORIGINATES_AT_VALUE);
+
+                            if ((target_linetokennumber_ptr->l == context_linetokennumber_ptr->l) && (target_linetokennumber_ptr->t != context_linetokennumber_ptr->t))
+                            {
+                                same_line_flag = true;
+                            }
                         }
+                        else
+                        {
+                            context_composite_ptr = NULL;
+                            context_linetokennumber_ptr = NULL;
+                        }
+
+                        /*
+                            -------------------------------------------------------------------------       
+                            | Use the line-based heuristic as one of several factors in prediction. |
+                            -------------------------------------------------------------------------
+                            The idea of predicting the next word based on the condition that the target and context words appear on the same line is interesting, but its effectiveness depends on the use case and the type of data you're working with.
+
+                         */    
+                        //if ((target_linetokennumber_ptr->l == context_linetokennumber_ptr->l) && (target_linetokennumber_ptr->t != context_linetokennumber_ptr->t))
+                        //{
+                            //std::cout<< "Target word: " << vocab(ptr->i_target_word + INDEX_ORIGINATES_AT_VALUE, true).c_str() << "(" << target_linetokennumber_ptr->l << ", " << target_linetokennumber_ptr->t << ")" << std::endl;
+                            //std::cout<< "Context word: " << vocab(ptr->i_context_word + INDEX_ORIGINATES_AT_VALUE, true).c_str() << "(" << context_linetokennumber_ptr->l << ", " << context_linetokennumber_ptr->t << ")" << std::endl;
+                           
+                            /*if (context_ptr == NULL)
+                            {
+                                context_ptr = ptr;
+                            }
+                            else if (context_ptr->cosine_similarity < ptr->cosine_similarity)
+                            {
+                                context_ptr = ptr;
+                            }*/ 
+
+                            //same_line_flag = true;                                                       
+                        //}
+                    }
+                    else // Same target_word, check cosine similarity 
+                    {  
+                        target_word = vocab(ptr->i_target_word + INDEX_ORIGINATES_AT_VALUE, true);
 
                         target_composite_ptr = vocab.get_composite_ptr(ptr->i_target_word + INDEX_ORIGINATES_AT_VALUE, true);
                         target_linetokennumber_ptr = vocab.get_line_token_number(target_composite_ptr, ptr->i_target_word + INDEX_ORIGINATES_AT_VALUE);
 
                         context_composite_ptr = vocab.get_composite_ptr(ptr->i_context_word + INDEX_ORIGINATES_AT_VALUE, true);
                         context_linetokennumber_ptr = vocab.get_line_token_number(context_composite_ptr, ptr->i_context_word + INDEX_ORIGINATES_AT_VALUE);
-
-                        if (target_linetokennumber_ptr->l == context_linetokennumber_ptr->l)
+                        
+                        if ((target_linetokennumber_ptr->l == context_linetokennumber_ptr->l) && (target_linetokennumber_ptr->t != context_linetokennumber_ptr->t))
                         {
-                            std::cout<< "Target word: " << vocab(ptr->i_target_word + INDEX_ORIGINATES_AT_VALUE, true).c_str() << std::endl;
-                            std::cout<< "Context word: " << vocab(ptr->i_context_word + INDEX_ORIGINATES_AT_VALUE, true).c_str() << std::endl;
+                            /*(std::cout<< "Target word: " << vocab(ptr->i_target_word + INDEX_ORIGINATES_AT_VALUE, true).c_str() << "(" << target_linetokennumber_ptr->l << ", " << target_linetokennumber_ptr->t << ")" << std::endl;
+                            std::cout<< "Context word: " << vocab(ptr->i_context_word + INDEX_ORIGINATES_AT_VALUE, true).c_str() << "(" << context_linetokennumber_ptr->l << ", " << context_linetokennumber_ptr->t << ")" << std::endl;
+                            
+                            if (context_ptr == NULL)
+                            {
+                                context_ptr = ptr;
+                            }
+                            else if (context_ptr->cosine_similarity < ptr->cosine_similarity)
+                            {
+                                context_ptr = ptr;
+                            }*/
+                            
+                            if (cs < ptr->cosine_similarity)
+                            {
+                                context_word = vocab(ptr->i_context_word + INDEX_ORIGINATES_AT_VALUE, true);
+                                cs = ptr->cosine_similarity;
+                            }
 
-                            break;
+                            same_line_flag = true;                          
+                        }
+
+                        if (!same_line_flag || ((cs < ptr->cosine_similarity) && target_word.compare(vocab(ptr->i_context_word + INDEX_ORIGINATES_AT_VALUE, true))))
+                        {                            
+                            context_word = vocab(ptr->i_context_word + INDEX_ORIGINATES_AT_VALUE, true);
+                            cs = ptr->cosine_similarity;
                         }
                     }
                 }
 
                 if (ptr->next == NULL)
                 {
-                    std::cout<< "Target word: " << target_word.c_str() << std::endl;
-                    std::cout<< "Context word: " << context_word.c_str() << std::endl;
+                    //std::cout<< "Target word: " << target_word.c_str() << std::endl;
+                    //std::cout<< "Context word: " << context_word.c_str() << std::endl;
+
+                    std::cout<< "Target word: " << target_word.c_str() << "(" << target_linetokennumber_ptr->l << ", " << target_linetokennumber_ptr->t << ")" << std::endl;
+                    std::cout<< "Context word: " << context_word.c_str() << "(" << context_linetokennumber_ptr->l << ", " << context_linetokennumber_ptr->t << ")" << std::endl;
+
+                    break;
                 }
                 
                 ptr = ptr->next;

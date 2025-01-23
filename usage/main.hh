@@ -38,6 +38,11 @@
 #endif
 #define SKIP_GRAM_CONTEXT_WINDOW_SIZE 2
 
+#ifdef DEFAULT_NUMBER_OF_CONTEXT_WORDS
+#undef DEFAULT_NUMBER_OF_CONTEXT_WORDS
+#endif
+#define DEFAULT_NUMBER_OF_CONTEXT_WORDS 10
+
 /*#include "../lib/argsv-cpp/lib/parser/parser.hh"
 #include "../lib/read_write_weights/header.hh"
 #include "./../lib/sundry/cooked_read_new.hh"
@@ -46,7 +51,7 @@
 #include "../lib/pairs/src/header.hh"
 #include "../lib/Skip-gram/lib/WordEmbedding-Algorithms/Word2Vec/Skip-gram/hyper-parameters.hh"*/
 
-#include "./proper.hh"
+#include "proper.hh"
 
 #define COMMAND "h -h help --help ? /? (Displays the help screen)\n\
 v -v version --version /v (Displays the version number)\n\
