@@ -1,5 +1,5 @@
 Evaluating Skip-Gram Trained Weights Through Context Prediction: A Target-to-Context Analysis
-(Baby steps towards converational AL), Q@khaa.pk
+(Baby steps towards Converational AI), Q@khaa.pk
 
 PS F:\Chat-Bot-Skip-gram\usage> ./weights.exe itchy vocab ./../NEW-INPUT.txt w1 w1p.dat w2 w2p.dat proper
 W1: 114 X 16
@@ -202,6 +202,101 @@ joints(51, i=52, l=25, t=1)
 ------> weight(90, i=91, l=42, t=2) cs=0.610432 ed=3.68581
 Target word: joints(25, 1)
 Context word: weight(42, 2)
+
+PS F:\Chat-Bot-Skip-gram\usage> ./weights.exe anxious vocab ./../NEW-INPUT.txt w1 w1p.dat w2 w2p.dat proper
+W1: 114 X 16
+W2: 16 X 114
+W2 transposed: 114 X 16
+"Number of target words"(arg_words.argc) = 1
+Target Instances and their indices in vocabulary...
+anxious#104(48, 2)
+anxious(104, i=105, l=48, t=2)
+------> chills(84, i=85, l=39, t=2) cs=0.156907 ed=5.92881
+------> bruising(82, i=83, l=38, t=2) cs=0.18352 ed=6.45671
+------> feeling(103, i=104, l=48, t=1) cs=0.288278 ed=3.46043
+------> levels(96, i=97, l=44, t=3) cs=0.290986 ed=3.58474
+------> fatigue(93, i=94, l=43, t=2) cs=0.331116 ed=3.54448
+------> weight(87, i=88, l=41, t=1) cs=0.366478 ed=4.31836
+------> sweats(86, i=87, l=40, t=2) cs=0.434493 ed=4.54481
+------> overwhelmed(106, i=107, l=49, t=2) cs=0.463272 ed=3.07495
+------> burning(71, i=72, l=34, t=1) cs=0.506498 ed=5.42371
+------> swallowing(18, i=19, l=9, t=2) cs=0.534618 ed=4.51292
+Target word: anxious(48, 2)
+Context word: feeling(48, 1)
+
+PS F:\Chat-Bot-Skip-gram\usage> ./weights.exe stiffness vocab ./../NEW-INPUT.txt w1 w1p.dat w2 w2p.dat proper
+W1: 114 X 16
+W2: 16 X 114
+W2 transposed: 114 X 16
+"Number of target words"(arg_words.argc) = 1
+Target Instances and their indices in vocabulary...
+stiffness#54(26, 2) stiffness#63(30, 2)
+stiffness(54, i=55, l=26, t=2)
+------> restless(113, i=114, l=52, t=2) cs=0.0606575 ed=3.33451
+------> difficulty(110, i=111, l=51, t=1) cs=0.180057 ed=3.27616
+------> swings(109, i=110, l=50, t=3) cs=0.210224 ed=3.24395
+------> anxious(104, i=105, l=48, t=2) cs=0.212027 ed=3.37214
+------> fatigue(93, i=94, l=43, t=2) cs=0.245668 ed=3.56516
+------> feeling(112, i=113, l=52, t=1) cs=0.352202 ed=3.00354
+------> burning(71, i=72, l=34, t=1) cs=0.428006 ed=5.7014
+------> overwhelmed(106, i=107, l=49, t=2) cs=0.484336 ed=2.82403
+------> irritation(67, i=68, l=32, t=2) cs=0.538683 ed=4.02332
+------> sore(55, i=56, l=27, t=1) cs=0.715256 ed=2.64605
+stiffness(63, i=64, l=30, t=2)
+------> focusing(111, i=112, l=51, t=2) cs=0.120662 ed=3.89756
+------> irregular(99, i=100, l=46, t=1) cs=0.123348 ed=4.35227
+------> lower(59, i=60, l=29, t=1) cs=0.139759 ed=5.0837
+------> sudden(92, i=93, l=43, t=1) cs=0.210526 ed=4.26905
+------> swings(109, i=110, l=50, t=3) cs=0.259246 ed=3.75972
+------> frequent(101, i=102, l=47, t=1) cs=0.289263 ed=3.87022
+------> fatigue(93, i=94, l=43, t=2) cs=0.318183 ed=3.88282
+------> overwhelmed(106, i=107, l=49, t=2) cs=0.430135 ed=3.48888
+------> sudden(89, i=90, l=42, t=1) cs=0.524114 ed=3.44546
+------> feeling(112, i=113, l=52, t=1) cs=0.596443 ed=3.29735
+Target word: stiffness(30, 2)
+Context word: sore(27, 1)
+
+PS F:\Chat-Bot-Skip-gram\usage> ./weights.exe bruising vocab ./../NEW-INPUT.txt w1 w1p.dat w2 w2p.dat proper
+W1: 114 X 16
+W2: 16 X 114
+W2 transposed: 114 X 16
+"Number of target words"(arg_words.argc) = 1
+Target Instances and their indices in vocabulary...
+bruising#82(38, 2)
+bruising(82, i=83, l=38, t=2)
+------> fingers(78, i=79, l=36, t=3) cs=0.151763 ed=7.71135
+------> urination(102, i=103, l=47, t=2) cs=0.188388 ed=4.70792
+------> heartbeat(100, i=101, l=46, t=2) cs=0.244826 ed=4.66111
+------> trouble(97, i=98, l=45, t=1) cs=0.400485 ed=4.27317
+------> cold(85, i=86, l=40, t=1) cs=0.440223 ed=5.10766
+------> chills(84, i=85, l=39, t=2) cs=0.458029 ed=5.2533
+------> weight(87, i=88, l=41, t=1) cs=0.534082 ed=4.25433
+------> unexplained(81, i=82, l=38, t=1) cs=0.544192 ed=5.36099
+------> sweats(86, i=87, l=40, t=2) cs=0.622696 ed=4.10217
+------> bruising(82, i=83, l=38, t=2) cs=0.640104 ed=4.75756
+Target word: bruising(38, 2)
+Context word: unexplained(38, 1)
+
+PS F:\Chat-Bot-Skip-gram\usage> ./weights.exe restless vocab ./../NEW-INPUT.txt w1 w1p.dat w2 w2p.dat proper
+W1: 114 X 16
+W2: 16 X 114
+W2 transposed: 114 X 16
+"Number of target words"(arg_words.argc) = 1
+Target Instances and their indices in vocabulary...
+restless#113(52, 2)
+restless(113, i=114, l=52, t=2)
+------> energy(95, i=96, l=44, t=2) cs=0.109797 ed=3.83377
+------> bruising(82, i=83, l=38, t=2) cs=0.129451 ed=6.55636
+------> skin(69, i=70, l=33, t=2) cs=0.15866 ed=6.05436
+------> irregular(99, i=100, l=46, t=1) cs=0.208168 ed=3.69787
+------> feeling(112, i=113, l=52, t=1) cs=0.318044 ed=3.09741
+------> sudden(92, i=93, l=43, t=1) cs=0.3521 ed=3.47817
+------> overwhelmed(106, i=107, l=49, t=2) cs=0.438443 ed=2.96486
+------> irritation(67, i=68, l=32, t=2) cs=0.472032 ed=4.27938
+------> sore(55, i=56, l=27, t=1) cs=0.504915 ed=3.48525
+------> pain(1, i=2, l=1, t=2) cs=0.588471 ed=4.19298
+Target word: restless(52, 2)
+Context word: feeling(52, 1)
 
 
 
