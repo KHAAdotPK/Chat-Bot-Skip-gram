@@ -344,6 +344,87 @@ class proper
          *       same-line context words enhances prediction relevance based on spatial proximity in the input data.
          */
         void predict_next_token(INDEX_PTR head_target_word_indices, CORPUS& vocab, cc_tokenizer::string_character_traits<char>::size_type n = DEFAULT_NUMBER_OF_CONTEXT_WORDS) throw (ala_exception)
+        {            
+            if (head_context_word_indices == NULL)
+            {
+                throw ala_exception("proper::predict_next_token() Error: No context words found for target words.");
+            }
+
+            CONTEXT_WORD_INDICES_PTR ptr = head_context_word_indices;
+                        
+            do
+            {                
+                /* Look values are all there and link is well constructed */
+                if (!(ptr->i_target_word == CHAT_BOT_SKIP_GRAM_UNKNOWN_TOKEN_NUMERIC_VALUE && ptr->i_context_word == CHAT_BOT_SKIP_GRAM_UNKNOWN_TOKEN_NUMERIC_VALUE && ptr->cosine_similarity == 0 && ptr->euclidean_distance == 0))
+                { 
+                    CONTEXT_WORD_INDICES_PTR local_ptr = ptr;
+                    
+                    cc_tokenizer::String<char> target_word = vocab(local_ptr->i_target_word + INDEX_ORIGINATES_AT_VALUE, true);  
+                    COMPOSITE_PTR target_composite_ptr = vocab.get_composite_ptr(local_ptr->i_target_word + INDEX_ORIGINATES_AT_VALUE, true);
+                    LINETOKENNUMBER_PTR target_linetokennumber_ptr = vocab.get_line_token_number(target_composite_ptr, local_ptr->i_target_word + INDEX_ORIGINATES_AT_VALUE);
+                                            
+                    while(1)
+                    {   
+                        /* DO WORK HERE */
+
+                        cc_tokenizer::String<char> context_word = vocab(local_ptr->i_context_word + INDEX_ORIGINATES_AT_VALUE, true);
+                        COMPOSITE_PTR context_composite_ptr = vocab.get_composite_ptr(local_ptr->i_context_word + INDEX_ORIGINATES_AT_VALUE, true);
+                        LINETOKENNUMBER_PTR context_linetokennumber_ptr = vocab.get_line_token_number(context_composite_ptr, local_ptr->i_context_word + INDEX_ORIGINATES_AT_VALUE);
+
+                        if ((target_linetokennumber_ptr->l == context_linetokennumber_ptr->l) && (target_linetokennumber_ptr->t != context_linetokennumber_ptr->t))
+                        {
+                            std::cout<< "Same line found... " << target_word.c_str() << ", " << context_word.c_str() << std::endl;
+                        } 
+
+                        local_ptr = local_ptr->next;     
+                        /* DO WORK HERE ENDS */
+                                                
+                        if (local_ptr == NULL)
+                        {
+                            break;
+                        }
+                            
+                        if (target_word.compare(vocab(local_ptr->i_target_word + INDEX_ORIGINATES_AT_VALUE, true)))
+                        {
+                            break;
+                        }
+
+                        /* Look values are all there and link is well constructed */    
+                        if ((local_ptr->i_target_word == CHAT_BOT_SKIP_GRAM_UNKNOWN_TOKEN_NUMERIC_VALUE || local_ptr->i_context_word == CHAT_BOT_SKIP_GRAM_UNKNOWN_TOKEN_NUMERIC_VALUE || local_ptr->cosine_similarity == 0 || local_ptr->euclidean_distance == 0))
+                        {
+                            local_ptr = local_ptr->next;
+
+                            if (local_ptr == NULL)
+                            {
+                                break;
+                            }
+                        }
+                    }
+
+                    while (1)
+                    {
+                       COMPOSITE_PTR local_target_composite_ptr = vocab.get_composite_ptr(ptr->i_target_word + INDEX_ORIGINATES_AT_VALUE, true);
+                       LINETOKENNUMBER_PTR local_target_linetokennumber_ptr = vocab.get_line_token_number(local_target_composite_ptr, ptr->i_target_word + INDEX_ORIGINATES_AT_VALUE);
+                        
+                       if ((target_linetokennumber_ptr->l == local_target_linetokennumber_ptr->l) && (target_linetokennumber_ptr->t == local_target_linetokennumber_ptr->t))
+                       {
+                           ptr = ptr->next;                                                      
+                       }
+                       else
+                       {                            
+                            break;                          
+                       } 
+                    }
+                }
+                else // As this link is not well constructor, jist skip over it
+                {
+                    ptr = ptr->next;
+                }                                
+            } 
+            while (ptr != NULL);
+            
+        }
+        void predict_next_token_old(INDEX_PTR head_target_word_indices, CORPUS& vocab, cc_tokenizer::string_character_traits<char>::size_type n = DEFAULT_NUMBER_OF_CONTEXT_WORDS) throw (ala_exception)
         {
             CONTEXT_WORD_INDICES_PTR ptr = head_context_word_indices;
 

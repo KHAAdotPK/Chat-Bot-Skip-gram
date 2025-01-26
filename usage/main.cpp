@@ -545,7 +545,7 @@ int main(int argc, char* argv[])
             /*
                 Soni: WORKING HERE.
              */
-            chatbot.predict_next_token(head, vocab);
+            chatbot.predict_next_token_old(head, vocab);
         }
         catch (ala_exception& e)
         {
