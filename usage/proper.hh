@@ -50,7 +50,60 @@ class proper
 {            
     public:
         typedef struct context_word_indices<E> CONTEXT_WORD_INDICES;
-        typedef struct CONTEXT_WORD_INDICES* CONTEXT_WORD_INDICES_PTR;
+        typedef struct context_word_indices<E>* CONTEXT_WORD_INDICES_PTR;
+
+        // Please note that this is a ad hoc class/solution, the class has lots of missing parts and that is why it is not meant/ready to be used in a production environment
+        class predicted_context_word
+        {
+            public: 
+                CONTEXT_WORD_INDICES_PTR ptr;
+
+                COMPOSITE_PTR target_composite_ptr;
+                LINETOKENNUMBER_PTR target_linetokennumber_ptr;
+
+                COMPOSITE_PTR context_composite_ptr;
+                LINETOKENNUMBER_PTR context_linetokennumber_ptr;
+
+            public:
+                predicted_context_word() : ptr(NULL), target_composite_ptr(NULL), target_linetokennumber_ptr(NULL), context_composite_ptr(NULL), context_linetokennumber_ptr(NULL)
+                {                    
+                }
+
+                predicted_context_word(CONTEXT_WORD_INDICES_PTR ptr, COMPOSITE_PTR target_composite_ptr, LINETOKENNUMBER_PTR target_linetokennumber_ptr, COMPOSITE_PTR context_composite_ptr, LINETOKENNUMBER_PTR context_linetokennumber_ptr) : ptr(ptr), target_composite_ptr(target_composite_ptr), target_linetokennumber_ptr(target_linetokennumber_ptr), context_composite_ptr(context_composite_ptr), context_linetokennumber_ptr(context_linetokennumber_ptr)
+                {
+                }
+
+                predicted_context_word(predicted_context_word& ref)
+                {
+                    ptr = ref.ptr;
+                    target_composite_ptr = ref.target_composite_ptr;
+                    target_linetokennumber_ptr = ref.target_linetokennumber_ptr;
+                    context_composite_ptr = ref.context_composite_ptr;
+                    context_linetokennumber_ptr = ref.context_linetokennumber_ptr; 
+                }
+
+                predicted_context_word& operator=(predicted_context_word& ref) throw (ala_exception)
+                {                
+                    if (this != &ref)
+                    {
+                        /*if (ref.ptr != NULL)
+                        {
+                            std::cout<< "In the operator=" << std::endl;
+                        }*/
+
+                        ptr = ref.ptr;
+                        target_composite_ptr = ref.target_composite_ptr;
+                        target_linetokennumber_ptr = ref.target_linetokennumber_ptr;
+                        context_composite_ptr = ref.context_composite_ptr;
+                        context_linetokennumber_ptr = ref.context_linetokennumber_ptr;
+                    }
+
+                    return *this;
+                }
+        };
+
+        typedef struct predicted_context_word PREDICTED_CONTEXT_WORD;
+        typedef PREDICTED_CONTEXT_WORD* PREDICTED_CONTEXT_WORD_PTR;
 
         proper(INDEX_PTR head_target_word_indices, CORPUS& vocab, Collective<E>& W1, Collective<E>& W2, cc_tokenizer::string_character_traits<char>::size_type n = DEFAULT_NUMBER_OF_CONTEXT_WORDS) throw (ala_exception)
         {
@@ -343,15 +396,170 @@ class proper
          *       and populated with valid embeddings and metadata. Additionally, the heuristic prioritizing 
          *       same-line context words enhances prediction relevance based on spatial proximity in the input data.
          */
-        void predict_next_token(INDEX_PTR head_target_word_indices, CORPUS& vocab, cc_tokenizer::string_character_traits<char>::size_type n = DEFAULT_NUMBER_OF_CONTEXT_WORDS) throw (ala_exception)
+        predicted_context_word predict_next_token(INDEX_PTR head_target_word_indices, CORPUS& vocab, cc_tokenizer::string_character_traits<char>::size_type n = DEFAULT_NUMBER_OF_CONTEXT_WORDS, bool verbose = false) throw (ala_exception)
+        {
+            if (head_context_word_indices == NULL)
+            {
+                throw ala_exception("proper::predict_next_token() Error: No context words found for target words.");
+            }    
+
+            E cs = 0;
+            bool same_line_flag = false;
+            predicted_context_word predicted_token;
+            CONTEXT_WORD_INDICES_PTR ptr = head_context_word_indices;
+
+            do
+            {
+                /* Look values are all there and link is well constructed */
+                if (!(ptr->i_target_word == CHAT_BOT_SKIP_GRAM_UNKNOWN_TOKEN_NUMERIC_VALUE && ptr->i_context_word == CHAT_BOT_SKIP_GRAM_UNKNOWN_TOKEN_NUMERIC_VALUE && ptr->cosine_similarity == 0 && ptr->euclidean_distance == 0))
+                {
+                    CONTEXT_WORD_INDICES_PTR local_ptr = ptr;
+
+                    cc_tokenizer::String<char> target_word;  
+                    COMPOSITE_PTR target_composite_ptr = NULL;
+                    LINETOKENNUMBER_PTR target_linetokennumber_ptr = NULL;
+
+                    try
+                    {
+                        /* code */
+                        target_word = vocab(local_ptr->i_target_word + INDEX_ORIGINATES_AT_VALUE, true);  
+                        target_composite_ptr = vocab.get_composite_ptr(local_ptr->i_target_word + INDEX_ORIGINATES_AT_VALUE, true);
+                        target_linetokennumber_ptr = vocab.get_line_token_number(target_composite_ptr, local_ptr->i_target_word + INDEX_ORIGINATES_AT_VALUE);
+                    }
+                    catch(ala_exception& e)
+                    {
+                        std::cerr << "proper::predict_next_token() -> " << e.what() << std::endl;
+                    }
+
+                    while (1)
+                    {
+                        cc_tokenizer::String<char> context_word;
+                        COMPOSITE_PTR context_composite_ptr = NULL;
+                        LINETOKENNUMBER_PTR context_linetokennumber_ptr = NULL;
+
+                        try 
+                        {
+                            context_word = vocab(local_ptr->i_context_word + INDEX_ORIGINATES_AT_VALUE, true);
+                            context_composite_ptr = vocab.get_composite_ptr(local_ptr->i_context_word + INDEX_ORIGINATES_AT_VALUE, true);
+                            context_linetokennumber_ptr = vocab.get_line_token_number(context_composite_ptr, local_ptr->i_context_word + INDEX_ORIGINATES_AT_VALUE);
+                        }
+                        catch(ala_exception& e)
+                        {
+                            std::cerr << "proper::predict_next_token() -> " << e.what() << std::endl; 
+                        }
+
+                        if ((target_linetokennumber_ptr->l == context_linetokennumber_ptr->l) && (target_linetokennumber_ptr->t != context_linetokennumber_ptr->t))
+                        {
+                            if (same_line_flag == false)
+                            {
+                                cs = 0;
+
+                                same_line_flag = true;
+                            }
+
+                            if (verbose)
+                            {
+                                std::cout<< "Target word: " << target_word.c_str() << "(" << target_linetokennumber_ptr->l << ", " << target_linetokennumber_ptr->t << ")" << ", cs=" << local_ptr->cosine_similarity << " - [Same line]" <<std::endl;
+                                std::cout<< "--> Context word: " << context_word.c_str() << "(" << context_linetokennumber_ptr->l << ", " << context_linetokennumber_ptr->t << ")" << std::endl;
+                            }
+                            
+                            if (cs < local_ptr->cosine_similarity)
+                            {
+                                predicted_token = predicted_context_word(local_ptr, target_composite_ptr, target_linetokennumber_ptr, context_composite_ptr, context_linetokennumber_ptr);
+                                cs = local_ptr->cosine_similarity;
+                            }                            
+                        }
+
+                        if (same_line_flag == false)
+                        {                            
+                            if (cs < local_ptr->cosine_similarity)
+                            {
+                                if (verbose)
+                                {
+                                    std::cout<< "Target word: " << target_word.c_str() << "(" << target_linetokennumber_ptr->l << ", " << target_linetokennumber_ptr->t << ")" << ", cs=" << local_ptr->cosine_similarity << std::endl;
+                                    std::cout<< "--> Context word: " << context_word.c_str() << "(" << context_linetokennumber_ptr->l << ", " << context_linetokennumber_ptr->t << ")" << std::endl;
+                                }
+
+                                cs = local_ptr->cosine_similarity;
+
+                                predicted_token = predicted_context_word(local_ptr, target_composite_ptr, target_linetokennumber_ptr, context_composite_ptr, context_linetokennumber_ptr);
+                            }
+                        }
+
+                        local_ptr = local_ptr->next;     
+                                                                        
+                        if (local_ptr == NULL)
+                        {
+                            break;
+                        }
+                            
+                        if (target_word.compare(vocab(local_ptr->i_target_word + INDEX_ORIGINATES_AT_VALUE, true)))
+                        {
+                            break;
+                        }
+
+                        /* Look values are all there and link is well constructed */    
+                        if ((local_ptr->i_target_word == CHAT_BOT_SKIP_GRAM_UNKNOWN_TOKEN_NUMERIC_VALUE || local_ptr->i_context_word == CHAT_BOT_SKIP_GRAM_UNKNOWN_TOKEN_NUMERIC_VALUE || local_ptr->cosine_similarity == 0 || local_ptr->euclidean_distance == 0))
+                        {
+                            local_ptr = local_ptr->next;
+
+                            if (local_ptr == NULL)
+                            {
+                                break;
+                            }
+                        }
+                    }
+
+                    // Jump to the next instance of the same target or a new target word                                        
+                    while (ptr != NULL)
+                    {
+                       COMPOSITE_PTR local_target_composite_ptr = NULL;
+                       LINETOKENNUMBER_PTR local_target_linetokennumber_ptr = NULL;
+
+                       try
+                       { 
+                           local_target_composite_ptr = vocab.get_composite_ptr(ptr->i_target_word + INDEX_ORIGINATES_AT_VALUE, true);
+                           local_target_linetokennumber_ptr = vocab.get_line_token_number(local_target_composite_ptr, ptr->i_target_word + INDEX_ORIGINATES_AT_VALUE);
+                       }
+                       catch (ala_exception& e)
+                       {
+                           std::cerr << "proper::predict_next_token() -> " << e.what() << std::endl;
+                       }
+                        
+                       if ((target_linetokennumber_ptr->l == local_target_linetokennumber_ptr->l) && (target_linetokennumber_ptr->t == local_target_linetokennumber_ptr->t))
+                       {
+                           //std::cout<< vocab(ptr->i_target_word + INDEX_ORIGINATES_AT_VALUE, true).c_str() << std::endl;
+
+                           ptr = ptr->next;                           
+                       }
+                       else
+                       {                            
+                            break;                          
+                       } 
+                    }
+                }
+                else
+                {                 
+                    ptr = ptr->next; 
+                }
+            } 
+            while (ptr != NULL);
+            
+            return predicted_token;
+        }            
+        /*predicted_context_word*/ void predict_next_token_old_2(INDEX_PTR head_target_word_indices, CORPUS& vocab, cc_tokenizer::string_character_traits<char>::size_type n = DEFAULT_NUMBER_OF_CONTEXT_WORDS, bool verbose = false) throw (ala_exception)
         {            
             if (head_context_word_indices == NULL)
             {
                 throw ala_exception("proper::predict_next_token() Error: No context words found for target words.");
             }
-
+           
+            E cs = 0;
+            bool same_line_flag = false;
             CONTEXT_WORD_INDICES_PTR ptr = head_context_word_indices;
-                        
+
+            //predicted_context_word predicted_token;
+                                    
             do
             {                
                 /* Look values are all there and link is well constructed */
@@ -372,9 +580,37 @@ class proper
                         LINETOKENNUMBER_PTR context_linetokennumber_ptr = vocab.get_line_token_number(context_composite_ptr, local_ptr->i_context_word + INDEX_ORIGINATES_AT_VALUE);
 
                         if ((target_linetokennumber_ptr->l == context_linetokennumber_ptr->l) && (target_linetokennumber_ptr->t != context_linetokennumber_ptr->t))
-                        {
-                            std::cout<< "Same line found... " << target_word.c_str() << ", " << context_word.c_str() << std::endl;
-                        } 
+                        {                            
+                            if (verbose)
+                            {
+                                std::cout<< "Target word: " << target_word.c_str() << "(" << target_linetokennumber_ptr->l << ", " << target_linetokennumber_ptr->t << ")" << ", cs=" << local_ptr->cosine_similarity << " - [Same line]" <<std::endl;
+                                std::cout<< "--> Context word: " << context_word.c_str() << "(" << context_linetokennumber_ptr->l << ", " << context_linetokennumber_ptr->t << ")" << std::endl;
+                            }
+                            
+                            if (cs < local_ptr->cosine_similarity)
+                            {
+                                //predicted_token = predicted_context_word(local_ptr, target_composite_ptr, target_linetokennumber_ptr, context_composite_ptr, context_linetokennumber_ptr);
+                                cs = local_ptr->cosine_similarity;
+                            }
+
+                            same_line_flag = true;
+                        }
+
+                        if (same_line_flag == false)
+                        {                            
+                            if (cs < local_ptr->cosine_similarity)
+                            {
+                                if (verbose)
+                                {
+                                    std::cout<< "Target word: " << target_word.c_str() << "(" << target_linetokennumber_ptr->l << ", " << target_linetokennumber_ptr->t << ")" << ", cs=" << local_ptr->cosine_similarity << std::endl;
+                                    std::cout<< "--> Context word: " << context_word.c_str() << "(" << context_linetokennumber_ptr->l << ", " << context_linetokennumber_ptr->t << ")" << std::endl;
+                                }
+
+                                cs = local_ptr->cosine_similarity;
+
+                                //predicted_token = predicted_context_word(local_ptr, target_composite_ptr, target_linetokennumber_ptr, context_composite_ptr, context_linetokennumber_ptr);
+                            }
+                        }
 
                         local_ptr = local_ptr->next;     
                         /* DO WORK HERE ENDS */
@@ -403,12 +639,29 @@ class proper
 
                     while (1)
                     {
-                       COMPOSITE_PTR local_target_composite_ptr = vocab.get_composite_ptr(ptr->i_target_word + INDEX_ORIGINATES_AT_VALUE, true);
-                       LINETOKENNUMBER_PTR local_target_linetokennumber_ptr = vocab.get_line_token_number(local_target_composite_ptr, ptr->i_target_word + INDEX_ORIGINATES_AT_VALUE);
+                       COMPOSITE_PTR local_target_composite_ptr = NULL;
+                       LINETOKENNUMBER_PTR local_target_linetokennumber_ptr = NULL;
+
+                       try
+                       { 
+                           local_target_composite_ptr = vocab.get_composite_ptr(ptr->i_target_word + INDEX_ORIGINATES_AT_VALUE, true);
+                           local_target_linetokennumber_ptr = vocab.get_line_token_number(local_target_composite_ptr, ptr->i_target_word + INDEX_ORIGINATES_AT_VALUE);
+                       }
+                       catch (ala_exception& e)
+                       {
+                           std::cerr << "proper::predict_next_token() -> " << e.what() << std::endl;
+                       }
                         
                        if ((target_linetokennumber_ptr->l == local_target_linetokennumber_ptr->l) && (target_linetokennumber_ptr->t == local_target_linetokennumber_ptr->t))
                        {
+                           if (ptr != NULL)
+                           { 
                            ptr = ptr->next;                                                      
+                           }
+                           else 
+                           {
+                               break;
+                           }
                        }
                        else
                        {                            
@@ -418,13 +671,23 @@ class proper
                 }
                 else // As this link is not well constructor, jist skip over it
                 {
-                    ptr = ptr->next;
+                    if (ptr != NULL)
+                    { 
+                        ptr = ptr->next;                                                      
+                    }
+                    else 
+                    {
+                        break;
+                    }                    
                 }                                
             } 
-            while (ptr != NULL);
-            
+            while (ptr != NULL);  
+
+            std::cout<<"ENDS here" << std::endl;
+
+            //return predicted_token;          
         }
-        void predict_next_token_old(INDEX_PTR head_target_word_indices, CORPUS& vocab, cc_tokenizer::string_character_traits<char>::size_type n = DEFAULT_NUMBER_OF_CONTEXT_WORDS) throw (ala_exception)
+        void predict_next_token_old_1(INDEX_PTR head_target_word_indices, CORPUS& vocab, cc_tokenizer::string_character_traits<char>::size_type n = DEFAULT_NUMBER_OF_CONTEXT_WORDS) throw (ala_exception)
         {
             CONTEXT_WORD_INDICES_PTR ptr = head_context_word_indices;
 

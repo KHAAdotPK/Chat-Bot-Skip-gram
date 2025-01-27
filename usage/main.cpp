@@ -17,7 +17,7 @@
 int main(int argc, char* argv[])
 {
     INDEX_PTR head = NULL, ptr = NULL;
-    ARG arg_common, arg_words, arg_w1, arg_w2, arg_help, arg_vocab, arg_average, arg_pairs, arg_proper;
+    ARG arg_common, arg_words, arg_w1, arg_w2, arg_help, arg_vocab, arg_average, arg_pairs, arg_proper, arg_verbose;
     cc_tokenizer::csv_parser<cc_tokenizer::String<char>, char> argsv_parser(cc_tokenizer::String<char>(COMMAND));
     cc_tokenizer::csv_parser<cc_tokenizer::String<char>, char> argsv_parser_average(cc_tokenizer::String<char>(COMMAND_average));
     cc_tokenizer::String<char> vocab_file_name;
@@ -38,6 +38,8 @@ int main(int argc, char* argv[])
 
         return 0;
     }
+
+    FIND_ARG(argv, argc, argsv_parser, "verbose", arg_verbose);
 
     FIND_ARG(argv, argc, argsv_parser, "proper", arg_proper);
                
@@ -539,22 +541,49 @@ int main(int argc, char* argv[])
         try
         {                    
             class proper<double> chatbot(head, vocab, W1, W2);
+            class proper<double>::PREDICTED_CONTEXT_WORD predicted_token;
             
-            chatbot.dsplay_list_of_context_words_for_each_target_word(head, vocab);
+            if (arg_verbose.i)
+            {
+                chatbot.dsplay_list_of_context_words_for_each_target_word(head, vocab);
+            }
+            
+            if (arg_verbose.i)
+            {                
+                predicted_token = chatbot.predict_next_token(head, vocab, DEFAULT_NUMBER_OF_CONTEXT_WORDS, true);
+            }
+            else
+            {
+                //std::cout<< "1" << std::endl;
+                predicted_token = chatbot.predict_next_token(head, vocab);
+                //std::cout<< "2" << std::endl;
+            }
 
-            /*
-                Soni: WORKING HERE.
-             */
-            chatbot.predict_next_token_old(head, vocab);
+            //std::cout<< "Henderson" << std::endl;
+
+            if (predicted_token.ptr != NULL)
+            {
+                proper<double>::CONTEXT_WORD_INDICES_PTR ptr = predicted_token.ptr;
+
+                COMPOSITE_PTR target_composite_ptr = predicted_token.target_composite_ptr;
+                LINETOKENNUMBER_PTR target_linetokennumber_ptr = predicted_token.target_linetokennumber_ptr;
+
+                COMPOSITE_PTR context_composite_ptr = predicted_token.context_composite_ptr;
+                LINETOKENNUMBER_PTR context_linetokennumber_ptr = predicted_token.context_linetokennumber_ptr;
+
+                std::cout<< "Target Word: " <<  vocab(ptr->i_target_word + INDEX_ORIGINATES_AT_VALUE, true).c_str() << std::endl;
+                std::cout<< "Context Word: " << vocab(ptr->i_context_word + INDEX_ORIGINATES_AT_VALUE, true).c_str() << std::endl;
+            }
+
+            //std::cout<< "Hola" << std::endl;
         }
         catch (ala_exception& e)
         {
             std::cerr<< "main() -> " << e.what() << std::endl;
         }
     }
-
+    
     /////////
-
 
     // Memory Management
     
