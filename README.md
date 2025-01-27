@@ -11,6 +11,8 @@ The Chat Bot Skip-Gram aims to leverage word embeddings trained via the [skip-gr
     - Displays the help screen.
 - `v -v version --version /v`
     - Displays the version number.
+- `verbose --verbose`
+    - Verbose mode to control output verbosity.    
      
  **Vocabulary and Weights**
 - `words --words`
