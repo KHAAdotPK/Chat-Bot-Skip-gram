@@ -1,7 +1,10 @@
 Evaluating Skip-Gram Trained Weights Through Context Prediction: A Target-to-Context Analysis
 (Baby steps towards Converational AI), Q@khaa.pk
 
+```BASH
 PS F:\Chat-Bot-Skip-gram\usage> ./weights.exe itchy vocab ./../NEW-INPUT.txt w1 w1p.dat w2 w2p.dat proper
+```
+```
 W1: 114 X 16
 W2: 16 X 114
 W2 transposed: 114 X 16
@@ -21,8 +24,12 @@ itchy(79, i=80, l=37, t=1)
 ------> neck(62, i=63, l=30, t=1) cs=0.582045 ed=3.86161
 Target word: itchy(37, 1)
 Context word: neck(30, 1)
+```
 
+```BASH
 PS F:\Chat-Bot-Skip-gram\usage> ./weights.exe stomach vocab ./../NEW-INPUT.txt w1 w1p.dat w2 w2p.dat proper
+```
+```
 W1: 114 X 16
 W2: 16 X 114
 W2 transposed: 114 X 16
@@ -75,8 +82,11 @@ stomach(6, i=7, l=4, t=1)
 ------> back(60, i=61, l=29, t=2) cs=0.603763 ed=3.88726
 Target word: stomach(4, 1)
 Context word: ache(2, 2)
-
+```
+```BASH
 PS F:\Chat-Bot-Skip-gram\usage> ./weights.exe weight vocab ./../NEW-INPUT.txt w1 w1p.dat w2 w2p.dat proper
+```
+```
 W1: 114 X 16
 W2: 16 X 114
 W2 transposed: 114 X 16
@@ -107,8 +117,11 @@ weight(90, i=91, l=42, t=2)
 ------> lower(59, i=60, l=29, t=1) cs=0.529974 ed=4.07197
 Target word: weight(42, 2)
 Context word: light(18, 1)
-
+```
+```BASH
 PS F:\Chat-Bot-Skip-gram\usage> ./weights.exe painful vocab ./../NEW-INPUT.txt w1 w1p.dat w2 w2p.dat proper
+```
+```
 W1: 114 X 16
 W2: 16 X 114
 W2 transposed: 114 X 16
@@ -128,8 +141,11 @@ painful(19, i=20, l=10, t=1)
 ------> loss(12, i=13, l=7, t=1) cs=0.647318 ed=4.46555
 Target word: painful(10, 1)
 Context word: loss(7, 1)
-
+```
+```BASH
 PS F:\Chat-Bot-Skip-gram\usage> ./weights.exe walking vocab ./../NEW-INPUT.txt w1 w1p.dat w2 w2p.dat proper
+```
+```
 W1: 114 X 16
 W2: 16 X 114
 W2 transposed: 114 X 16
@@ -160,8 +176,11 @@ walking(65, i=66, l=31, t=2)
 ------> sneezing(50, i=51, l=24, t=2) cs=0.530325 ed=3.04933
 Target word: walking(31, 2)
 Context word: tingling(36, 1)
-
+```
+```BASH
 PS F:\Chat-Bot-Skip-gram\usage> ./weights.exe digestive vocab ./../NEW-INPUT.txt w1 w1p.dat w2 w2p.dat proper
+```
+```
 W1: 114 X 16
 W2: 16 X 114
 W2 transposed: 114 X 16
@@ -181,8 +200,11 @@ digestive(8, i=9, l=5, t=1)
 ------> low(94, i=95, l=44, t=1) cs=0.565829 ed=2.40773
 Target word: digestive(5, 1)
 Context word: low(44, 1)
-
+```
+```BASH
 PS F:\Chat-Bot-Skip-gram\usage> ./weights.exe joints vocab ./../NEW-INPUT.txt w1 w1p.dat w2 w2p.dat proper
+```
+```
 W1: 114 X 16
 W2: 16 X 114
 W2 transposed: 114 X 16
@@ -202,8 +224,11 @@ joints(51, i=52, l=25, t=1)
 ------> weight(90, i=91, l=42, t=2) cs=0.610432 ed=3.68581
 Target word: joints(25, 1)
 Context word: weight(42, 2)
-
+```
+```BASH
 PS F:\Chat-Bot-Skip-gram\usage> ./weights.exe anxious vocab ./../NEW-INPUT.txt w1 w1p.dat w2 w2p.dat proper
+```
+```
 W1: 114 X 16
 W2: 16 X 114
 W2 transposed: 114 X 16
@@ -223,7 +248,9 @@ anxious(104, i=105, l=48, t=2)
 ------> swallowing(18, i=19, l=9, t=2) cs=0.534618 ed=4.51292
 Target word: anxious(48, 2)
 Context word: feeling(48, 1)
+```
 
+```BASH
 PS F:\Chat-Bot-Skip-gram\usage> ./weights.exe stiffness vocab ./../NEW-INPUT.txt w1 w1p.dat w2 w2p.dat proper
 W1: 114 X 16
 W2: 16 X 114
@@ -255,7 +282,8 @@ stiffness(63, i=64, l=30, t=2)
 ------> feeling(112, i=113, l=52, t=1) cs=0.596443 ed=3.29735
 Target word: stiffness(30, 2)
 Context word: sore(27, 1)
-
+```
+```
 PS F:\Chat-Bot-Skip-gram\usage> ./weights.exe bruising vocab ./../NEW-INPUT.txt w1 w1p.dat w2 w2p.dat proper
 W1: 114 X 16
 W2: 16 X 114
@@ -276,7 +304,8 @@ bruising(82, i=83, l=38, t=2)
 ------> bruising(82, i=83, l=38, t=2) cs=0.640104 ed=4.75756
 Target word: bruising(38, 2)
 Context word: unexplained(38, 1)
-
+```
+```BASH
 PS F:\Chat-Bot-Skip-gram\usage> ./weights.exe restless vocab ./../NEW-INPUT.txt w1 w1p.dat w2 w2p.dat proper
 W1: 114 X 16
 W2: 16 X 114
@@ -297,6 +326,115 @@ restless(113, i=114, l=52, t=2)
 ------> pain(1, i=2, l=1, t=2) cs=0.588471 ed=4.19298
 Target word: restless(52, 2)
 Context word: feeling(52, 1)
+```
+
+#### After enhancing context word prediction system
+
+```BASH
+PS F:\Chat-Bot-Skip-gram\usage> ./weights.exe feeling vocab ./../NEW-INPUT.txt w1 w11p.dat w2 w22p.dat proper verbose
+```
+```
+W1: 114 X 16
+W2: 16 X 114
+W2 transposed: 114 X 16
+"Number of target words"(arg_words.argc) = 1
+Target Instances and their indices in vocabulary...
+feeling#10(6, 1) feeling#103(48, 1) feeling#105(49, 1) feeling#112(52, 1) 
+feeling(10, i=11, l=6, t=1)
+------> overwhelmed(106, i=107, l=49, t=2) cs=0.106467 ed=3.70418
+------> restless(113, i=114, l=52, t=2) cs=0.174629 ed=3.37129
+------> difficulty(110, i=111, l=51, t=1) cs=0.22694 ed=3.36894
+------> feeling(105, i=106, l=49, t=1) cs=0.275196 ed=3.3981
+------> skin(69, i=70, l=33, t=2) cs=0.277365 ed=5.63081
+------> cramps(58, i=59, l=28, t=2) cs=0.311723 ed=4.17656
+------> anxious(104, i=105, l=48, t=2) cs=0.367342 ed=3.22684
+------> skin(66, i=67, l=32, t=1) cs=0.42206 ed=4.49773
+------> urination(102, i=103, l=47, t=2) cs=0.4844 ed=3.00359
+------> pain(1, i=2, l=1, t=2) cs=0.486658 ed=4.54572
+feeling(103, i=104, l=48, t=1)
+------> bruising(82, i=83, l=38, t=2) cs=0.180222 ed=6.11104
+------> hands(75, i=76, l=35, t=3) cs=0.18799 ed=6.59875
+------> numbness(73, i=74, l=35, t=1) cs=0.197201 ed=6.64891
+------> feeling(105, i=106, l=49, t=1) cs=0.212062 ed=3.03946
+------> low(94, i=95, l=44, t=1) cs=0.216477 ed=3.2764
+------> difficulty(110, i=111, l=51, t=1) cs=0.269751 ed=2.78783
+------> focusing(111, i=112, l=51, t=2) cs=0.278692 ed=2.71407
+------> anxious(104, i=105, l=48, t=2) cs=0.339419 ed=2.82181
+------> loss(91, i=92, l=42, t=3) cs=0.646887 ed=2.45883
+------> ears(39, i=40, l=19, t=3) cs=0.665384 ed=2.84067
+feeling(105, i=106, l=49, t=1)
+------> feeling(112, i=113, l=52, t=1) cs=0.152286 ed=5.08944
+------> focusing(111, i=112, l=51, t=2) cs=0.224047 ed=5.00111
+------> mood(108, i=109, l=50, t=2) cs=0.237809 ed=5.00142
+------> urination(102, i=103, l=47, t=2) cs=0.247517 ed=5.05602
+------> heartbeat(100, i=101, l=46, t=2) cs=0.248847 ed=5.11719
+------> numbness(73, i=74, l=35, t=1) cs=0.299389 ed=7.05162
+------> pain(61, i=62, l=29, t=3) cs=0.332731 ed=5.26713
+------> cramps(58, i=59, l=28, t=2) cs=0.38531 ed=5.04848
+------> feeling(105, i=106, l=49, t=1) cs=0.455583 ed=4.58448
+------> difficulty(64, i=65, l=31, t=1) cs=0.642206 ed=4.12555
+feeling(112, i=113, l=52, t=1)
+------> heartbeat(100, i=101, l=46, t=2) cs=0.0591617 ed=4.83982
+------> feeling(103, i=104, l=48, t=1) cs=0.0859335 ed=4.60899
+------> restless(113, i=114, l=52, t=2) cs=0.216732 ed=4.20042
+------> feeling(112, i=113, l=52, t=1) cs=0.318323 ed=4.07539
+------> difficulty(110, i=111, l=51, t=1) cs=0.367294 ed=3.99627
+------> irritability(107, i=108, l=50, t=1) cs=0.37229 ed=4.00091
+------> aching(52, i=53, l=25, t=2) cs=0.406736 ed=4.34995
+------> overwhelmed(106, i=107, l=49, t=2) cs=0.467496 ed=3.79842
+------> fatigue(93, i=94, l=43, t=2) cs=0.526195 ed=3.67123
+------> irregular(99, i=100, l=46, t=1) cs=0.634205 ed=3.32256
+Target word: feeling(6, 1), cs=0.106467
+--> Context word: overwhelmed(49, 2)
+Target word: feeling(6, 1), cs=0.174629
+--> Context word: restless(52, 2)
+Target word: feeling(6, 1), cs=0.22694
+--> Context word: difficulty(51, 1)
+Target word: feeling(6, 1), cs=0.275196
+--> Context word: feeling(49, 1)
+Target word: feeling(6, 1), cs=0.277365
+--> Context word: skin(33, 2)
+Target word: feeling(6, 1), cs=0.311723
+--> Context word: cramps(28, 2)
+Target word: feeling(6, 1), cs=0.367342
+--> Context word: anxious(48, 2)
+Target word: feeling(6, 1), cs=0.42206
+--> Context word: skin(32, 1)
+Target word: feeling(6, 1), cs=0.4844
+--> Context word: urination(47, 2)
+Target word: feeling(6, 1), cs=0.486658
+--> Context word: pain(1, 2)
+Target word: feeling(6, 1), cs=0.646887
+--> Context word: loss(42, 3)
+Target word: feeling(6, 1), cs=0.665384
+--> Context word: ears(19, 3)
+Target word: feeling(48, 1), cs=0.339419 - [Same line]
+--> Context word: anxious(48, 2)
+Target word: feeling(49, 1), cs=0.467496 - [Same line]
+--> Context word: overwhelmed(49, 2)
+Target word: feeling(52, 1), cs=0.216732 - [Same line]
+--> Context word: restless(52, 2)
+Next Token Prediction:
+Target word: feeling(112, i=106, l=49, t=1), cs=0.467496 - [Same line]
+--> Context word: overwhelmed(106, i=107, l=49, t=2)
+```
+
+#### Same but less verbose
+
+```BASH
+PS F:\Chat-Bot-Skip-gram\usage> ./weights.exe feeling vocab ./../NEW-INPUT.txt w1 w11p.dat w2 w22p.dat proper
+```
+```BASH
+W1: 114 X 16
+W2: 16 X 114
+W2 transposed: 114 X 16
+"Number of target words"(arg_words.argc) = 1
+Target Instances and their indices in vocabulary...
+feeling#10(6, 1) feeling#103(48, 1) feeling#105(49, 1) feeling#112(52, 1)
+Next Token Prediction:
+Target word: feeling(112, i=106, l=49, t=1), cs=0.467496 - [Same line]
+--> Context word: overwhelmed(106, i=107, l=49, t=2)
+```
 
 
 

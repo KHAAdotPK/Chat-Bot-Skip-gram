@@ -554,13 +554,9 @@ int main(int argc, char* argv[])
             }
             else
             {
-                //std::cout<< "1" << std::endl;
                 predicted_token = chatbot.predict_next_token(head, vocab);
-                //std::cout<< "2" << std::endl;
             }
-
-            //std::cout<< "Henderson" << std::endl;
-
+           
             if (predicted_token.ptr != NULL)
             {
                 proper<double>::CONTEXT_WORD_INDICES_PTR ptr = predicted_token.ptr;
@@ -571,11 +567,18 @@ int main(int argc, char* argv[])
                 COMPOSITE_PTR context_composite_ptr = predicted_token.context_composite_ptr;
                 LINETOKENNUMBER_PTR context_linetokennumber_ptr = predicted_token.context_linetokennumber_ptr;
 
-                std::cout<< "Target Word: " <<  vocab(ptr->i_target_word + INDEX_ORIGINATES_AT_VALUE, true).c_str() << std::endl;
-                std::cout<< "Context Word: " << vocab(ptr->i_context_word + INDEX_ORIGINATES_AT_VALUE, true).c_str() << std::endl;
-            }
-
-            //std::cout<< "Hola" << std::endl;
+                std::cout<< "Next Token Prediction:" << std::endl;
+                if (target_linetokennumber_ptr->l == context_linetokennumber_ptr->l && target_linetokennumber_ptr->t != context_linetokennumber_ptr->t)
+                {
+                    std::cout<< "Target word: " << vocab(ptr->i_target_word + INDEX_ORIGINATES_AT_VALUE, true).c_str() << "(" << ptr->i_target_word << ", i=" << target_linetokennumber_ptr->index <<", l=" << target_linetokennumber_ptr->l << ", t=" << target_linetokennumber_ptr->t << ")" << ", cs=" << ptr->cosine_similarity << " - [Same line]" <<std::endl;
+                    std::cout<< "--> Context word: " << vocab(ptr->i_context_word + INDEX_ORIGINATES_AT_VALUE, true).c_str() << "(" << ptr->i_context_word << ", i=" << context_linetokennumber_ptr->index <<", l=" << context_linetokennumber_ptr->l << ", t=" << context_linetokennumber_ptr->t << ")" << std::endl;
+                }
+                else
+                {
+                    std::cout<< "Target word: " << vocab(ptr->i_target_word + INDEX_ORIGINATES_AT_VALUE, true).c_str() << "(" << ptr->i_target_word << ", i=" << target_linetokennumber_ptr->index <<", l=" << target_linetokennumber_ptr->l << ", t=" << target_linetokennumber_ptr->t << ")" << ", cs=" << ptr->cosine_similarity << std::endl;
+                    std::cout<< "Context word: " << vocab(ptr->i_context_word + INDEX_ORIGINATES_AT_VALUE, true).c_str() << "(" << ptr->i_context_word << ", i=" << context_linetokennumber_ptr->index <<", l=" << context_linetokennumber_ptr->l << ", t=" << context_linetokennumber_ptr->t << ")" << std::endl;
+                }                
+            }            
         }
         catch (ala_exception& e)
         {
