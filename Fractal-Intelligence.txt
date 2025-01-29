@@ -436,6 +436,48 @@ Target word: feeling(112, i=106, l=49, t=1), cs=0.467496 - [Same line]
 --> Context word: overwhelmed(106, i=107, l=49, t=2)
 ```
 
+```BASH
+PS F:\Chat-Bot-Skip-gram\usage> ./weights.exe cold vocab ./../NEW-INPUT.txt w1 w11p.dat w2 w22p.dat proper
+```
+```
+W1: 114 X 16
+W2: 16 X 114
+W2 transposed: 114 X 16
+"Number of target words"(arg_words.argc) = 1
+Target Instances and their indices in vocabulary...
+cold#85(40, 1)
+Next Token Prediction:
+Target word: cold(85, i=86, l=40, t=1), cs=0.631131 - [Same line]
+--> Context word: sweats(86, i=87, l=40, t=2)
+```
 
+```BASH
+PS F:\Chat-Bot-Skip-gram\usage> ./weights.exe sweats vocab ./../NEW-INPUT.txt w1 w11p.dat w2 w22p.dat proper
+```
+```
+W1: 114 X 16
+W2: 16 X 114
+W2 transposed: 114 X 16
+"Number of target words"(arg_words.argc) = 1
+Target Instances and their indices in vocabulary...
+sweats#86(40, 2)
+Next Token Prediction:
+Target word: sweats(86, i=87, l=40, t=2), cs=0.546889 - [Same line]
+--> Context word: cold(85, i=86, l=40, t=1)
+```
 
+```BASH
+PS F:\Chat-Bot-Skip-gram\usage> ./weights.exe breathing vocab ./../NEW-INPUT.txt w1 w11p.dat w2 w22p.dat proper
+```
+```
+W1: 114 X 16
+W2: 16 X 114
+W2 transposed: 114 X 16
+"Number of target words"(arg_words.argc) = 1
+Target Instances and their indices in vocabulary...
+breathing#46(22, 2)
+Next Token Prediction:
+Target word: breathing(46, i=47, l=22, t=2), cs=0.636049
+Context word: in(77, i=78, l=36, t=2)
+```
 
