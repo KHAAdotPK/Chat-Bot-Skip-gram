@@ -17,7 +17,7 @@
 int main(int argc, char* argv[])
 {
     INDEX_PTR head = NULL, ptr = NULL;
-    ARG arg_common, arg_words, arg_w1, arg_w2, arg_help, arg_vocab, arg_average, arg_pairs, arg_proper, arg_verbose;
+    ARG arg_common, arg_words, arg_w1, arg_w2, arg_help, arg_vocab, arg_average, arg_pairs, arg_proper, arg_verbose, arg_similarities;
     cc_tokenizer::csv_parser<cc_tokenizer::String<char>, char> argsv_parser(cc_tokenizer::String<char>(COMMAND));
     cc_tokenizer::csv_parser<cc_tokenizer::String<char>, char> argsv_parser_average(cc_tokenizer::String<char>(COMMAND_average));
     cc_tokenizer::String<char> vocab_file_name;
@@ -163,24 +163,65 @@ int main(int argc, char* argv[])
         PAIRS grow_pairs_dude_ask_her_if_she_want_to_marry_you(vocab, true);
     }
 
+    FIND_ARG(argv, argc, argsv_parser, "similarities", arg_similarities);
+    
     Collective<double> W1 /* = Collective<double>{NULL, DIMENSIONS{SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, vocab.numberOfUniqueTokens() vocab.numberOfUniqueTokens(), NULL, NULL}}*/;
-    Collective<double> W2 = Collective<double>{NULL, DIMENSIONS{/*vocab.numberOfUniqueTokens()*/ vocab.numberOfTokens(), SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, NULL, NULL}};
+    Collective<double> W2 = Collective<double>{NULL, DIMENSIONS{vocab.numberOfUniqueTokens() /*vocab.numberOfTokens()*/, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, NULL, NULL}};
 
     if (arg_w1.argc)
     {
-        W1 = Collective<double>{NULL, DIMENSIONS{SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, /*vocab.numberOfUniqueTokens()*/ vocab.numberOfTokens(), NULL, NULL}};
-        READ_W_BIN(W1, argv[arg_w1.i + 1], double);
-
-        std::cout<< "W1: " << W1.getShape().getDimensionsOfArray().getNumberOfInnerArrays() << " X " <<  W1.getShape().getNumberOfColumns() << std::endl;
+        W1 = Collective<double>{NULL, DIMENSIONS{SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, vocab.numberOfUniqueTokens() /*vocab.numberOfTokens()*/, NULL, NULL}};
+        READ_W_BIN_NEW_ONE(W1, argv[arg_w1.i + 1], double);
+        
+        if (arg_verbose.i || !arg_similarities.i)
+        {
+            std::cout<< "W1: " << W1.getShape().getDimensionsOfArray().getNumberOfInnerArrays() << " X " <<  W1.getShape().getNumberOfColumns() << std::endl;   
+        }        
     }
     
-    READ_W_BIN(W2, argv[arg_w2.i + 1], double);
+    READ_W_BIN_NEW_ONE(W2, argv[arg_w2.i + 1], double);
     
-    std::cout<< "W2: " << W2.getShape().getDimensionsOfArray().getNumberOfInnerArrays() << " X " <<  W2.getShape().getNumberOfColumns() << std::endl;
-    Collective<double> W2_transposed = Numcy::transpose(W2); 
-    //W2 = Numcy::transpose(W2);    
-    std::cout<< "W2 transposed: " << W2_transposed.getShape().getDimensionsOfArray().getNumberOfInnerArrays() << " X " <<  W2_transposed.getShape().getNumberOfColumns() << std::endl;
+    if (arg_verbose.i || !arg_similarities.i)
+    {
+        std::cout<< "W2: " << W2.getShape().getDimensionsOfArray().getNumberOfInnerArrays() << " X " <<  W2.getShape().getNumberOfColumns() << std::endl;    
+    }
+    Collective<double> W2_transposed = Numcy::transpose(W2);
 
+    WRITE_W_BIN(W2_transposed, "W2_transposed.bin", double);
+    
+    if (arg_verbose.i || !arg_similarities.i)
+    {
+        std::cout<< "W2 transposed: " << W2_transposed.getShape().getDimensionsOfArray().getNumberOfInnerArrays() << " X " <<  W2_transposed.getShape().getNumberOfColumns() << std::endl;
+    }
+
+    if (arg_similarities.i && arg_w1.i && arg_w2.i)
+    {
+        for (cc_tokenizer::string_character_traits<char>::size_type i = 0; i < vocab.numberOfUniqueTokens(); i++)
+        {
+            std::cout<< vocab[i + INDEX_ORIGINATES_AT_VALUE].c_str() << "-> " << std::endl;
+            Collective<double> u = W1.slice(i*SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, DIMENSIONS{1, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, NULL, NULL});
+
+            for (cc_tokenizer::string_character_traits<char>::size_type j = 0; j < vocab.numberOfUniqueTokens(); j++)
+            {
+                Collective<double> v = W2_transposed.slice(j*SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, DIMENSIONS{SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, 1, NULL, NULL});
+
+                double cosine_similarity = Numcy::Spatial::Distance::cosine(v, u);
+
+                std::cout<< "\"" << vocab[j + INDEX_ORIGINATES_AT_VALUE].c_str() << "\": " << cosine_similarity << ", ";
+            }
+
+            std::cout<< std::endl;
+        }
+
+
+        return 0;
+    }
+
+
+    /*
+        Averaging Two Matrices
+        When the 'average' command-line option is provided, the program computes the average of the two matrices W1 and W2.
+     */
     if (!arg_proper.i)
     {
         FIND_ARG(argv, argc, argsv_parser, "average", arg_average);
@@ -254,14 +295,14 @@ int main(int argc, char* argv[])
 
     bool found = false;
     
-    for (int i = 0 /*arg_words.i*/; i < arg_words.argc; i++)
-    {    
-        for (cc_tokenizer::string_character_traits<char>::size_type j = 0; j < /*vocab.numberOfUniqueTokens()*/ vocab.numberOfTokens(); j++)
-        {            
-            if (/*!vocab[j + INDEX_ORIGINATES_AT_VALUE].compare(cc_tokenizer::String<char>(argv[i + 1]))*/ !vocab(j + INDEX_ORIGINATES_AT_VALUE, true).compare(argv[i + 1]))
+    for (int i = arg_words.i + 1; i <= arg_words.argc; i++)
+    {           
+        for (cc_tokenizer::string_character_traits<char>::size_type j = 0; j < vocab.numberOfUniqueTokens() /*vocab.numberOfTokens()*/; j++)
+        {           
+            if (/*!vocab[j + INDEX_ORIGINATES_AT_VALUE].compare(cc_tokenizer::String<char>(argv[i + 1]))*/ !vocab(j + INDEX_ORIGINATES_AT_VALUE, true).compare(argv[i]))
             {
                 found = true;
-
+                
                 /*std::cout<< "j = " << j + INDEX_ORIGINATES_AT_VALUE << ", " << argv[1 + i] << std::endl;*/
                 
                 //std::cout<< vocab(j + INDEX_ORIGINATES_AT_VALUE, true).c_str() << ", ";
@@ -455,9 +496,9 @@ int main(int argc, char* argv[])
                     Collective<double> u, v;
 
                     if (arg_average.i && arg_w1.i && arg_w1.argc)
-                    {                    
+                    {                                                   
                         //u = Collective<double>{W1.slice(ptr->i*SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE), DIMENSIONS{SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, 1, NULL, NULL}};
-                        u = W1.slice(ptr->i*SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, DIMENSIONS{SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, 1, NULL, NULL});
+                        u = W1.slice(ptr->i*SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, DIMENSIONS{SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, 1, NULL, NULL});                        
                     }
                     else 
                     {
@@ -467,7 +508,7 @@ int main(int argc, char* argv[])
                             A value of 0 would indicate orthogonality (no similarity).
                         */
                         //u = Collective<double>{W2.slice(ptr->i*SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE), DIMENSIONS{SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, 1, NULL, NULL}};
-                        u = W2_transposed.slice(ptr->i*SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, DIMENSIONS{SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, 1, NULL, NULL});
+                        u = W2_transposed.slice(ptr->i*SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, DIMENSIONS{SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, 1, NULL, NULL});                        
                     }
 
                     /*for (int i = 0; i < SKIP_GRAM_EMBEDDNG_VECTOR_SIZE; i++)
@@ -478,12 +519,12 @@ int main(int argc, char* argv[])
                     if (arg_average.i && arg_w1.i && arg_w1.argc)
                     {
                         //v = Collective<double>{W1.slice(next_ptr->i*SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE), DIMENSIONS{1, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, NULL, NULL}};
-                        v = W1.slice(next_ptr->i*SKIP_GRAM_EMBEDDNG_VECTOR_SIZE,DIMENSIONS{1, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, NULL, NULL});
+                        v = W1.slice(next_ptr->i*SKIP_GRAM_EMBEDDNG_VECTOR_SIZE,DIMENSIONS{1, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, NULL, NULL});                        
                     }
                     else 
                     {
                         //v = Collective<double>{W2.slice(next_ptr->i*SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE), DIMENSIONS{1, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, NULL, NULL}};
-                        v = W2_transposed.slice(next_ptr->i*SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, DIMENSIONS{1, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, NULL, NULL});
+                        v = W2_transposed.slice(next_ptr->i*SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, DIMENSIONS{1, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, NULL, NULL});                        
                     }
                     /*for (int i = 0; i < SKIP_GRAM_EMBEDDNG_VECTOR_SIZE; i++)
                     {
