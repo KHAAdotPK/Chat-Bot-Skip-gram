@@ -180,13 +180,62 @@ int main(int argc, char* argv[])
     }
     
     READ_W_BIN_NEW_ONE(W2, argv[arg_w2.i + 1], double);
+
+    Collective<double> W2_transposed = Numcy::transpose(W2);
     
     if (arg_verbose.i || !arg_similarities.i)
     {
-        std::cout<< "W2: " << W2.getShape().getDimensionsOfArray().getNumberOfInnerArrays() << " X " <<  W2.getShape().getNumberOfColumns() << std::endl;    
+        std::cout<< "W2: " << W2.getShape().getDimensionsOfArray().getNumberOfInnerArrays() << " X " <<  W2.getShape().getNumberOfColumns() << std::endl;        
     }
-    Collective<double> W2_transposed = Numcy::transpose(W2);
+    
+    /* *********************************************************** */
+    // Debugging W2 and transposed W2, to see if they are the same // 
+    /* *********************************************************** */
+    /*
+    Collective<double> u = W2.slice(W2.getShape().getNumberOfColumns() - 1, DIMENSIONS{1, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, NULL, NULL}, AXIS_ROWS);
+    for (cc_tokenizer::string_character_traits<char>::size_type i = 0; i < u.getShape().getN(); i++)
+    {
+        std::cout<< u[i] << " ";
+    }
+    std::cout<< std::endl;
 
+    std::cout<< "------------------------------------------------------------------------------------" << std::endl;
+
+
+    std::cout<< "W2_transposed: " << W2_transposed.getShape().getNumberOfRows() << " X " <<  W2_transposed.getShape().getNumberOfColumns() << std::endl;
+    */
+
+    /*Collective<double>*/ /*u = W2_transposed.slice((W2_transposed.getShape().getNumberOfRows() - 1)*W2_transposed.getShape().getNumberOfColumns(), DIMENSIONS{SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, 1, NULL, NULL});
+    for (cc_tokenizer::string_character_traits<char>::size_type i = 0; i < u.getShape().getN(); i++)
+    {
+        std::cout<< u[i] << " ";
+    }
+    std::cout<< std::endl;
+
+    
+        for (cc_tokenizer::string_character_traits<char>::size_type i = W2.getShape().getNumberOfRows() - 1; i < W2.getShape().getNumberOfRows(); i++)
+        {
+
+            for (cc_tokenizer::string_character_traits<char>::size_type j = 0; j < W2.getShape().getNumberOfColumns(); j++)
+            {
+                std::cout<< W2[i*W2.getShape().getNumberOfColumns() + j] << " ";
+            }
+            std::cout<< std::endl;
+        }
+        std::cout<< "------------------------------------------------------------------------------------" << std::endl;        
+     */ 
+     /*   
+        for (cc_tokenizer::string_character_traits<char>::size_type i = W2_transposed.getShape().getNumberOfRows() - 1; i < W2_transposed.getShape().getNumberOfRows(); i++)
+        {
+            for (cc_tokenizer::string_character_traits<char>::size_type j = 0; j < W2_transposed.getShape().getNumberOfColumns(); j++)
+            {
+                std::cout<< W2_transposed[i*W2_transposed.getShape().getNumberOfColumns() + j] << " ";
+            }
+            std::cout<< std::endl;
+        }
+      */      
+    //    exit(0);
+     
     WRITE_W_BIN(W2_transposed, "W2_transposed.bin", double);
     
     if (arg_verbose.i || !arg_similarities.i)
@@ -198,20 +247,57 @@ int main(int argc, char* argv[])
     {
         for (cc_tokenizer::string_character_traits<char>::size_type i = 0; i < vocab.numberOfUniqueTokens(); i++)
         {
-            std::cout<< vocab[i + INDEX_ORIGINATES_AT_VALUE].c_str() << "-> " << std::endl;
-            Collective <double> u = W1.slice(i*SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, DIMENSIONS{1, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, NULL, NULL});
-            u = Numcy::LinAlg::norm(u);
+            std::cout<< vocab[i + INDEX_ORIGINATES_AT_VALUE].c_str() << "->> ";
+                /*(Collective <double> u = W1.slice(i*SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, DIMENSIONS{1, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, NULL, NULL});*/
+
+            /*Collective<double> u = W2_transposed.slice(i*SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, DIMENSIONS{1, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, NULL, NULL}); */
+            Collective<double> u = W1.slice(i*SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, DIMENSIONS{1, SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, NULL, NULL});
+                        
+            /*for (int i = 0; i < SKIP_GRAM_EMBEDDNG_VECTOR_SIZE; i++)
+            {
+                std::cout<< u[i] << ", ";
+            }*/
+
+            /*Collective<double> u_norm_scalar = Numcy::LinAlg::norm(u);
+
+            u = u / u_norm_scalar;*/
+
+            //std::cout<< "Shape of u = " << u.getShape().getNumberOfRows() << "x" << u.getShape().getNumberOfColumns() << std::endl;
 
             for (cc_tokenizer::string_character_traits<char>::size_type j = 0; j < vocab.numberOfUniqueTokens(); j++)
-            {
-                Collective<double> v = W1.slice(j*SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, DIMENSIONS{SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, 1, NULL, NULL});
-                v = Numcy::LinAlg::norm(v);
+            {                
+                    /*Collective<double> v = W1.slice(j*SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, DIMENSIONS{SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, 1, NULL, NULL});*/
+
+                Collective<double> v = W2_transposed.slice(j*SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, DIMENSIONS{SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, 1, NULL, NULL}); 
+
+                /*Collective<double> v = W1.slice(j*SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, DIMENSIONS{SKIP_GRAM_EMBEDDNG_VECTOR_SIZE, 1, NULL, NULL});*/
+
+                /*for (int i = 0; i < SKIP_GRAM_EMBEDDNG_VECTOR_SIZE; i++)
+                {
+                    std::cout<< v[i] << ", ";
+                }*/
+
+                /*Collective<double> v_norm_scalar = Numcy::LinAlg::norm(v);
+
+                v = v / v_norm_scalar;*/
+
+                //std::cout<< "Shape of v = " << v.getShape().getNumberOfRows() << "x" << v.getShape().getNumberOfColumns() << std::endl;
 
                 double cosine_similarity = Numcy::Spatial::Distance::cosine(u, v);
 
+                //return (result > 1.0) ? 1.0 : (result < -1.0) ? -1.0 : result;
+
+                if (cosine_similarity > 1.0)
+                {
+                    cosine_similarity = 1.0;
+                }
+                else if (cosine_similarity < -1.0)
+                {
+                    cosine_similarity = -1.0;
+                }
+
                 std::cout<< "\"" << vocab[j + INDEX_ORIGINATES_AT_VALUE].c_str() << "\": " << cosine_similarity << ", ";
             }
-
 
             /*for (cc_tokenizer::string_character_traits<char>::size_type j = 0; j < vocab.numberOfUniqueTokens(); j++)
             {
@@ -222,7 +308,7 @@ int main(int argc, char* argv[])
                 std::cout<< "\"" << vocab[j + INDEX_ORIGINATES_AT_VALUE].c_str() << "\": " << cosine_similarity << ", ";
             }*/
 
-            std::cout<< std::endl;
+            std::cout<< std::endl << std::endl;
         }
 
 
